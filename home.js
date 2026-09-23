@@ -1,8 +1,9 @@
 /* =====================================================================
    Little Sunshine: home.js (the "Today" page)
    Reads the saved profile, applies the sky, fills in the header, the
-   quote of the day, today's poem, "Tap for a smile", and wires up the
-   bottom navigation.
+   quote of the day, today's poem, "Tap for a smile", today's art, the
+   tiny kindness, and wires up the bottom navigation.
+   The art itself is drawn by art.js (window.LittleSunshineArt).
 
    Loaded in <head> without defer. The top part runs right away (redirect
    if there is no profile, apply the sky before first paint); the rest
@@ -16,9 +17,11 @@
      ------------------------------------------------------------------- */
   const STORAGE_KEY = 'littleSunshine:v1';
   const FAVORITES_KEY = 'littleSunshine:favorites';
+  const KINDNESS_KEY = 'littleSunshine:kindness';
   const QUOTES_URL = 'data/quotes.json';
   const POEMS_URL = 'data/poems.json';
   const COMPLIMENTS_URL = 'data/compliments.json';
+  const CHALLENGES_URL = 'data/challenges.json';
 
   // Used by "Tap for a smile" until compliments.json loads (or if it can't)
   const FALLBACK_SMILES = [
@@ -30,6 +33,9 @@
   // Burst particle colors: pink, peach, butter, lavender, mint (like the welcome petals)
   const PETAL_COLORS = ['#F7B9C8', '#FFCBA4', '#FFE8A3', '#D6C6F2', '#BFE3CC'];
   const BURST_COUNT = 12;
+
+  // Wallpaper export size (portrait phone screen)
+  const WALLPAPER = { width: 1080, height: 1920 };
 
   // statusBar is used for <meta name="theme-color"> (it's the sky's top color)
   const SKIES = {
@@ -112,6 +118,28 @@
   }
 
 
+  // Tiny kindness: a list of the dates ("YYYY-MM-DD") it was done
+  function loadKindnessDates() {
+    try {
+      const list = JSON.parse(localStorage.getItem(KINDNESS_KEY));
+      return Array.isArray(list)
+        ? list.filter((d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d))
+        : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveKindnessDates(list) {
+    try {
+      localStorage.setItem(KINDNESS_KEY, JSON.stringify(list));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+
   /* -------------------------------------------------------------------
      "Today" helpers: the same pick all day, a new one tomorrow.
      Reused by the other cards later.
@@ -146,6 +174,13 @@
       r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
       return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
     };
+  }
+
+  // Counts whole days since 1970 for today's local date, so something can
+  // step through a list one item per day (e.g. the 5 art styles)
+  function todayNumber() {
+    const now = new Date();
+    return Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
   }
 
   // Returns the same item all day, and a different one tomorrow
@@ -490,6 +525,166 @@
     }
 
 
+    /* ---------------- Today's art ---------------- */
+    const artEls = {
+      frame: $('art-frame'),
+      fallback: $('art-fallback'),
+      actions: $('art-actions'),
+      makeNew: $('art-new'),
+      save: $('art-save'),
+    };
+    const art = { seed: 0, style: 0 };
+
+    // The current sky's colors, straight from the CSS variables
+    function readSkyColors() {
+      const css = getComputedStyle(root);
+      const read = (name) => css.getPropertyValue(name).trim();
+      return {
+        skyTop: read('--sky-top'),
+        skyBottom: read('--sky-bottom'),
+        hillBack: read('--hill-back'),
+        hillFront: read('--hill-front'),
+        sunCore: read('--sun-core'),
+        sunEdge: read('--sun-edge'),
+        accent: read('--button'),
+      };
+    }
+
+    function drawArt() {
+      const { generateArt, STYLE_NAMES } = window.LittleSunshineArt;
+      artEls.frame.innerHTML = generateArt(art.seed, readSkyColors(), { style: art.style });
+      artEls.frame.setAttribute('aria-label', "Today's art: " + STYLE_NAMES[art.style].toLowerCase());
+    }
+
+    // "Make a new one": random seed and random style, with a quick fade
+    async function makeNewArt() {
+      art.seed = Math.floor(Math.random() * 4294967296);
+      art.style = Math.floor(Math.random() * window.LittleSunshineArt.STYLE_NAMES.length);
+      artEls.frame.classList.add('is-fading');
+      await wait(reducedMotion.matches ? 0 : 220);
+      drawArt();
+      artEls.frame.classList.remove('is-fading');
+    }
+
+    // Draws the current art onto a 1080x1920 canvas and downloads it as a PNG
+    function saveWallpaper() {
+      const svg = window.LittleSunshineArt.generateArt(art.seed, readSkyColors(), {
+        style: art.style,
+        width: WALLPAPER.width,
+        height: WALLPAPER.height,
+      });
+      const image = new Image();
+      artEls.save.disabled = true;
+
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = WALLPAPER.width;
+        canvas.height = WALLPAPER.height;
+        canvas.getContext('2d').drawImage(image, 0, 0, WALLPAPER.width, WALLPAPER.height);
+        canvas.toBlob((blob) => {
+          artEls.save.disabled = false;
+          if (!blob) {
+            showToast("I couldn't make the wallpaper, sorry.");
+            return;
+          }
+          downloadBlob(blob, 'little-sunshine-' + todayKey() + '.png');
+          showToast('Your wallpaper is on its way.');
+        }, 'image/png');
+      };
+      image.onerror = () => {
+        artEls.save.disabled = false;
+        showToast("I couldn't make the wallpaper, sorry.");
+      };
+      image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function setupArtCard() {
+      if (!window.LittleSunshineArt) {
+        artEls.frame.hidden = true;
+        artEls.actions.hidden = true;
+        artEls.fallback.hidden = false;
+        return;
+      }
+      // Today's art: seeded by the date, style steps through the 5 styles day by day
+      art.seed = getTodaySeed('art');
+      art.style = todayNumber() % window.LittleSunshineArt.STYLE_NAMES.length;
+      drawArt();
+
+      artEls.makeNew.addEventListener('click', makeNewArt);
+      artEls.save.addEventListener('click', saveWallpaper);
+    }
+
+
+    /* ---------------- A tiny kindness ---------------- */
+    const kindEls = {
+      wrap: $('kindness'),
+      check: $('kindness-check'),
+      task: $('kindness-task'),
+      done: $('kindness-done'),
+      count: $('kindness-count'),
+      fallback: $('kindness-fallback'),
+    };
+
+    // Gentle running total. Only ever counts what was done, never what wasn't.
+    function updateKindnessCount() {
+      const total = loadKindnessDates().length;
+      kindEls.count.hidden = total === 0;
+      kindEls.count.textContent = "You've done " + total + ' kind ' +
+        (total === 1 ? 'thing' : 'things') + ' for yourself.';
+    }
+
+    function showKindnessDone(isDone) {
+      kindEls.done.textContent = isDone ? 'Done. That was kind of you.' : '';
+    }
+
+    // Checking adds today's date; unchecking (a mis-tap) takes it back out
+    function onKindnessChange() {
+      const today = todayKey();
+      const dates = loadKindnessDates().filter((d) => d !== today);
+      if (kindEls.check.checked) dates.push(today);
+
+      if (!saveKindnessDates(dates)) {
+        showToast("I couldn't save that on this device, sorry.");
+      }
+      showKindnessDone(kindEls.check.checked);
+      updateKindnessCount();
+    }
+
+    async function setupKindnessCard() {
+      let challenges;
+      try {
+        challenges = await loadJsonList(CHALLENGES_URL, (c) => typeof c === 'string' && c.trim() !== '');
+      } catch (err) {
+        kindEls.fallback.hidden = false;
+        return;
+      }
+
+      kindEls.task.textContent = pickForToday(challenges, 'kindness');
+
+      // Already done today? Show it checked, without replaying the animation
+      const doneToday = loadKindnessDates().includes(todayKey());
+      kindEls.check.checked = doneToday;
+      showKindnessDone(doneToday);
+      updateKindnessCount();
+      kindEls.wrap.hidden = false;
+
+      kindEls.check.addEventListener('change', onKindnessChange);
+      // Turn on the check animation only after the first paint
+      requestAnimationFrame(() => requestAnimationFrame(() => kindEls.wrap.classList.add('is-live')));
+    }
+
+
     /* ---------------- Bottom navigation ---------------- */
     // Tabs that don't have a page yet
     function wireNavigation() {
@@ -505,5 +700,7 @@
     setupQuoteCard();
     setupPoemCard();
     setupSmile();
+    setupArtCard();
+    setupKindnessCard();
   });
 })();

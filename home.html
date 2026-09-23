@@ -1,8 +1,9 @@
 <!doctype html>
 <!--
-  Little Sunshine: the "Today" page (Step 2A)
+  Little Sunshine: the "Today" page
   Same sky, sun, and hills as the welcome page. A header on the sky,
-  four glass cards (empty for now), and a fixed bottom navigation.
+  the day's quote, poem, smile button, art, and tiny kindness, and a
+  fixed bottom navigation.
 -->
 <html lang="en" data-sky="peach">
 <head>
@@ -25,6 +26,8 @@
 
   <!-- Loaded in <head> on purpose (no defer): it checks for a saved profile and
        applies the saved sky before the first paint, so there is no color flash. -->
+  <!-- art.js first: it defines generateArt(), which home.js uses -->
+  <script src="art.js"></script>
   <script src="home.js"></script>
 </head>
 <body class="page-home">
@@ -148,10 +151,40 @@
 
       <section class="card home-card" aria-labelledby="card-art-title">
         <h2 class="home-card__title" id="card-art-title">Today's art</h2>
+
+        <!-- home.js puts the generated SVG in here -->
+        <div class="art-frame" id="art-frame" role="img" aria-label="Today's art"></div>
+
+        <!-- Shown only if the art can't be drawn -->
+        <p class="card-fallback" id="art-fallback" hidden>Your art is resting today. Try refreshing.</p>
+
+        <div class="art-actions" id="art-actions">
+          <button class="btn btn--soft" type="button" id="art-new">Make a new one</button>
+          <button class="btn btn--primary" type="button" id="art-save">Save as wallpaper</button>
+        </div>
       </section>
 
       <section class="card home-card" aria-labelledby="card-kindness-title">
         <h2 class="home-card__title" id="card-kindness-title">A tiny kindness</h2>
+
+        <!-- Filled by home.js. A real checkbox, so Space/Enter and screen readers just work. -->
+        <div class="kindness" id="kindness" hidden>
+          <label class="kindness__row" for="kindness-check">
+            <span class="kindness__box">
+              <input class="kindness__input" type="checkbox" id="kindness-check">
+              <svg class="kindness__tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6.5 12.5l3.8 3.8 7.2-8.3"/>
+              </svg>
+            </span>
+            <span class="kindness__task" id="kindness-task"></span>
+          </label>
+
+          <p class="kindness__done" id="kindness-done" aria-live="polite"></p>
+          <p class="kindness__count" id="kindness-count"></p>
+        </div>
+
+        <!-- Shown only if data/challenges.json can't be loaded -->
+        <p class="card-fallback" id="kindness-fallback" hidden>Your tiny kindness is resting today. Try refreshing.</p>
       </section>
     </main>
 
