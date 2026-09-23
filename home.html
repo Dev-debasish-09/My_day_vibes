@@ -1,0 +1,160 @@
+<!doctype html>
+<!--
+  Little Sunshine: the "Today" page (Step 2A)
+  Same sky, sun, and hills as the welcome page. A header on the sky,
+  four glass cards (empty for now), and a fixed bottom navigation.
+-->
+<html lang="en" data-sky="peach">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Phone status bar color. home.js keeps this in sync with the saved sky. -->
+  <meta name="theme-color" content="#FFD8BE">
+  <meta name="description" content="Your little page for today.">
+  <title>Today · Little Sunshine</title>
+
+  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+
+  <!-- Fonts: Fraunces for headings and the name, Nunito for everything else -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Loaded in <head> on purpose (no defer): it checks for a saved profile and
+       applies the saved sky before the first paint, so there is no color flash. -->
+  <script src="home.js"></script>
+</head>
+<body class="page-home">
+
+  <!-- ============ The scene: sky, sun, and two rolling hills (same as index.html) ============ -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <div class="sun">
+      <div class="sun__glow"></div>
+      <div class="sun__core"></div>
+    </div>
+
+    <svg class="hill hill--back" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 70 C60 40 130 30 200 52 C270 74 330 40 400 48 L400 200 L0 200 Z"/>
+    </svg>
+    <svg class="hill hill--front" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C80 50 150 60 220 85 C290 110 350 70 400 60 L400 200 L0 200 Z"/>
+    </svg>
+  </div>
+
+  <!-- ============ Page content (scrolls over the fixed scene) ============ -->
+  <div class="home">
+
+    <!-- Header sits directly on the sky, no card -->
+    <header class="home-header">
+      <p class="greet-time" id="home-greeting">Hello,</p>
+      <h1 class="greet-name" id="home-name">friend</h1>
+      <p class="home-date" id="home-date"></p>
+    </header>
+
+    <main class="home-cards">
+      <section class="card home-card quote-card" aria-labelledby="card-quote-title">
+        <h2 class="home-card__title" id="card-quote-title">Quote of the day</h2>
+
+        <!-- Filled by home.js. aria-live so "Show another" is read out. -->
+        <figure class="quote" id="quote" aria-live="polite" hidden>
+          <blockquote class="quote__text" id="quote-text"></blockquote>
+          <figcaption class="quote__author" id="quote-author"></figcaption>
+        </figure>
+
+        <!-- Shown only if data/quotes.json can't be loaded -->
+        <p class="card-fallback" id="quote-fallback" hidden>Your quote is resting today. Try refreshing.</p>
+
+        <div class="quote-actions" id="quote-actions" hidden>
+          <button class="icon-btn icon-btn--heart" type="button" id="quote-save"
+                  aria-label="Save quote to favorites" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 20s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/>
+            </svg>
+          </button>
+          <button class="icon-btn" type="button" id="quote-copy" aria-label="Copy quote">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/>
+              <path d="M15.5 8.5V6.5A2 2 0 0 0 13.5 4.5h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/>
+            </svg>
+          </button>
+          <!-- Hidden by home.js if the Web Share API isn't supported -->
+          <button class="icon-btn" type="button" id="quote-share" aria-label="Share quote" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 14.5V4M8 7.5l4-4 4 4"/>
+              <path d="M7.5 10.5h-1a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="quote-more">
+          <button class="btn btn--link" type="button" id="quote-another" hidden>Show another</button>
+        </div>
+      </section>
+
+      <section class="card home-card" aria-labelledby="card-poem-title">
+        <h2 class="home-card__title" id="card-poem-title">Today's little poem</h2>
+      </section>
+
+      <section class="card home-card" aria-labelledby="card-art-title">
+        <h2 class="home-card__title" id="card-art-title">Today's art</h2>
+      </section>
+
+      <section class="card home-card" aria-labelledby="card-kindness-title">
+        <h2 class="home-card__title" id="card-kindness-title">A tiny kindness</h2>
+      </section>
+    </main>
+
+    <footer class="home-footer">
+      <!-- "#edit" tells the welcome page to open the name screen instead of the greeting -->
+      <a class="btn btn--link" href="./#edit">Change name or sky</a>
+    </footer>
+  </div>
+
+  <!-- ============ Fixed bottom navigation ============ -->
+  <nav class="tabbar" aria-label="Main">
+    <div class="tabbar__inner">
+      <a class="tab is-active" href="home.html" aria-current="page">
+        <svg class="tab__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/>
+        </svg>
+        <span class="tab__label">Today</span>
+      </a>
+
+      <button class="tab" type="button" data-soon>
+        <svg class="tab__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M8 3.5h8M9 3.5v3c-2.4 1-4 3.3-4 6.2V17a3.5 3.5 0 0 0 3.5 3.5h7A3.5 3.5 0 0 0 19 17v-4.3c0-2.9-1.6-5.2-4-6.2v-3"/>
+          <path d="M12 16.2c-1.6-1-2.6-2-2.6-3.1a1.3 1.3 0 0 1 2.6-.4 1.3 1.3 0 0 1 2.6.4c0 1.1-1 2.1-2.6 3.1z"/>
+        </svg>
+        <span class="tab__label">Joy Jar</span>
+      </button>
+
+      <button class="tab" type="button" data-soon>
+        <svg class="tab__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3.5 9h11a2.5 2.5 0 1 0-2.5-2.5"/>
+          <path d="M3.5 13h14a2.5 2.5 0 1 1-2.5 2.5"/>
+          <path d="M3.5 17h6"/>
+        </svg>
+        <span class="tab__label">Breathe</span>
+      </button>
+
+      <button class="tab" type="button" data-soon>
+        <svg class="tab__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="8.5" r="3.8"/>
+          <path d="M4.5 20c.8-3.6 3.8-5.8 7.5-5.8s6.7 2.2 7.5 5.8"/>
+        </svg>
+        <span class="tab__label">Me</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Small toast for "coming soon" notes; role=status announces it politely -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+</body>
+</html>

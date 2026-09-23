@@ -201,13 +201,11 @@
       greetDay: $('greet-day'),
       openDay: $('open-day'),
       changeSetup: $('change-setup'),
-      toast: $('toast'),
     };
 
     let currentScreen = null;
     let switching = false;
     let petalsReleased = false;
-    let toastTimer = 0;
 
 
     /* ---------------- Screen switching (cross-fade + card resize) ---------------- */
@@ -374,8 +372,7 @@
     }
 
     els.openDay.addEventListener('click', () => {
-      // Later: window.location.href = 'home.html';
-      showToast("Your daily page is the next thing we'll build.");
+      window.location.href = 'home.html';
     });
 
     els.changeSetup.addEventListener('click', goToNameScreen);
@@ -415,20 +412,15 @@
     }
 
 
-    /* ---------------- Toast ---------------- */
-    function showToast(message) {
-      els.toast.textContent = message;
-      els.toast.classList.add('is-shown');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => els.toast.classList.remove('is-shown'), 3200);
-    }
-
-
     /* ---------------- Start ---------------- */
     // Read the sun's current style first so it starts at 0 and visibly rises on load.
     getComputedStyle(root).getPropertyValue('--sun-rise');
 
-    if (savedProfile) {
+    if (savedProfile && window.location.hash === '#edit') {
+      // Came from "Change name or sky" on the Today page: open the name screen, prefilled
+      history.replaceState(null, '', window.location.pathname);
+      goToNameScreen();
+    } else if (savedProfile) {
       // Returning visitor: straight to the greeting
       goToGreeting({ returning: true, focus: false });
     } else {

@@ -686,3 +686,258 @@ input { font: inherit; color: inherit; }
   .btn:active,
   .tile:active { transform: none; }
 }
+
+
+/* =====================================================================
+   18. Today page (home.html)
+   Reuses the scene, .card, .greet-time, .greet-name, .btn--link and
+   .toast from above. Only layout for the page, the header date, the
+   card titles, and the bottom navigation is new here.
+   ===================================================================== */
+.page-home {
+  --tabbar-height: 68px;
+}
+
+/* One centered scrolling column over the fixed sky + hills */
+.home {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding:
+    max(9svh, calc(env(safe-area-inset-top) + 28px))
+    max(16px, env(safe-area-inset-right))
+    /* room so the last item isn't hidden behind the fixed nav */
+    calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 24px)
+    max(16px, env(safe-area-inset-left));
+}
+
+/* ---- Header (directly on the sky, centered over the sun) ---- */
+.home-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.home-header .greet-name {
+  margin: 2px 0 6px;
+}
+.home-date {
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ---- Cards ---- */
+.home-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.home-card {
+  min-height: 132px;
+}
+.home-card__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+/* ---- Footer link ---- */
+.home-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+.home-footer .btn--link {
+  text-decoration-thickness: 1px;
+}
+
+/* ---- Bottom navigation ---- */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  padding: 6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  background: var(--card);
+  border-top: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 24px 24px 0 0;
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: 0 -10px 30px -18px rgba(91, 63, 99, 0.35);
+}
+.tabbar__inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.tab {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: var(--text-soft);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+.tab:active { transform: scale(0.97); }
+.tab:hover { color: var(--text); }
+.tab:focus-visible { border-radius: 16px; }
+
+/* Icon sits in a small pill; the active tab's pill is tinted */
+.tab__icon {
+  width: 44px;
+  height: 28px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: background-color 0.2s ease;
+}
+.tab.is-active {
+  color: var(--button);
+}
+.tab.is-active .tab__icon {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+/* Toast floats above the nav on this page */
+.page-home .toast {
+  bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 14px);
+}
+
+@media (min-width: 720px) {
+  .home { padding-top: 12svh; }
+  .home-card { padding: 28px 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab:active { transform: none; }
+}
+
+
+/* =====================================================================
+   19. Quote of the day card (home.html)
+   .icon-btn and .card-fallback are general so later cards can reuse them.
+   ===================================================================== */
+.quote {
+  margin: 18px 0 0;
+  text-align: center;
+  transition: opacity 0.26s ease;
+}
+.quote.is-fading { opacity: 0; }
+
+.quote__text {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.4rem;
+  line-height: 1.45;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.quote__author {
+  margin-top: 12px;
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
+.quote__author::before { content: "— "; }
+
+/* Kind message shown when a card's content can't load */
+.card-fallback {
+  margin-top: 16px;
+  color: var(--text-soft);
+  font-size: 16px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+/* Row of round icon buttons */
+.quote-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+.quote-actions[hidden],
+.btn[hidden] { display: none; }   /* .btn sets display, which would override [hidden] */
+
+.icon-btn {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-soft);
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 4px 12px -6px rgba(91, 63, 99, 0.35);
+  transition: transform 0.15s ease, color 0.2s ease, background-color 0.2s ease;
+}
+.icon-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.85); }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn:focus-visible { border-radius: 50%; }
+.icon-btn[hidden] { display: none; }
+
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: fill 0.2s ease;
+}
+
+/* Heart fills in with the sky's accent color when saved */
+.icon-btn--heart[aria-pressed="true"] { color: var(--button); }
+.icon-btn--heart[aria-pressed="true"] svg {
+  fill: currentColor;
+  animation: heart-pop 0.35s var(--ease-soft);
+}
+@keyframes heart-pop {
+  0%   { transform: scale(0.7); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.quote-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote { transition: none; }
+  .icon-btn:active { transform: none; }
+  .icon-btn--heart[aria-pressed="true"] svg { animation: none; }
+}
