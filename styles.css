@@ -1,0 +1,688 @@
+/* =====================================================================
+   Little Sunshine: styles
+   Mobile first (designed at 375px), then scaled up at 720px+.
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   1. Registered custom properties
+   @property tells the browser these are colors / numbers, so they can
+   be animated. That is what makes the sky gradient cross-fade smoothly
+   between themes (plain CSS variables would just snap).
+   --------------------------------------------------------------------- */
+@property --sky-top    { syntax: '<color>';  inherits: true; initial-value: #FFD8BE; }
+@property --sky-bottom { syntax: '<color>';  inherits: true; initial-value: #F7C6C7; }
+@property --hill-back  { syntax: '<color>';  inherits: true; initial-value: #F3B5BC; }
+@property --hill-front { syntax: '<color>';  inherits: true; initial-value: #E99AA8; }
+@property --sun-core   { syntax: '<color>';  inherits: true; initial-value: #FFF6D8; }
+@property --sun-edge   { syntax: '<color>';  inherits: true; initial-value: #FFD29A; }
+@property --button     { syntax: '<color>';  inherits: true; initial-value: #C4506C; }
+/* 0 = sun hidden behind the hills, 1 = sun high in the sky */
+@property --sun-rise   { syntax: '<number>'; inherits: true; initial-value: 0; }
+
+
+/* ---------------------------------------------------------------------
+   2. Design tokens
+   --------------------------------------------------------------------- */
+:root {
+  /* Text + glass card */
+  --text: #5B3F63;
+  --text-soft: #7C6284;
+  --card: rgba(255, 251, 246, 0.72);
+  --on-button: #FFFBF6;
+
+  /* Type */
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Shape */
+  --radius-card: 28px;
+  --radius-tile: 20px;
+  --radius-input: 16px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --theme-fade: 1.2s;
+  --sun-speed: 1.8s;
+  --ease-soft: cubic-bezier(0.22, 0.8, 0.26, 1);
+
+  color-scheme: light;
+
+  /* The theme colors live on <html>, so this is where they transition.
+     Everything that uses var(--sky-top) etc. follows along each frame. */
+  transition:
+    --sky-top    var(--theme-fade) ease,
+    --sky-bottom var(--theme-fade) ease,
+    --hill-back  var(--theme-fade) ease,
+    --hill-front var(--theme-fade) ease,
+    --sun-core   var(--theme-fade) ease,
+    --sun-edge   var(--theme-fade) ease,
+    --button     var(--theme-fade) ease,
+    --sun-rise   var(--sun-speed) var(--ease-soft);
+}
+
+
+/* ---------------------------------------------------------------------
+   3. The four skies
+   The same selectors also color the little preview tiles, because each
+   tile carries its own data-sky attribute.
+   --------------------------------------------------------------------- */
+:root,
+[data-sky="peach"] {
+  --sky-top: #FFD8BE;  --sky-bottom: #F7C6C7;
+  --hill-back: #F3B5BC; --hill-front: #E99AA8;
+  --sun-core: #FFF6D8; --sun-edge: #FFD29A;
+  --button: #C4506C;
+}
+[data-sky="lavender"] {
+  --sky-top: #D9CCF5;  --sky-bottom: #F4D3E4;
+  --hill-back: #C3B2EC; --hill-front: #A994DA;
+  --sun-core: #FFF1F6; --sun-edge: #F7C6C7;
+  --button: #7E5EBA;
+}
+[data-sky="sea"] {
+  --sky-top: #CDE7F5;  --sky-bottom: #FFF1C1;
+  --hill-back: #A8D3E6; --hill-front: #86BCD6;
+  --sun-core: #FFFBEA; --sun-edge: #FFE39A;
+  --button: #347896;
+}
+[data-sky="mint"] {
+  --sky-top: #CFE3D4;  --sky-bottom: #FFF1C1;
+  --hill-back: #AFD3B9; --hill-front: #8DBE9C;
+  --sun-core: #FFFBEA; --sun-edge: #FFD8BE;
+  --button: #3E7F55;
+}
+
+
+/* ---------------------------------------------------------------------
+   4. Base
+   --------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  /* Shows during iOS overscroll bounce, so it matches the bottom of the sky */
+  background-color: var(--sky-bottom);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  background-color: var(--sky-bottom);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, p { margin: 0; }
+
+button,
+input { font: inherit; color: inherit; }
+
+/* Clear, visible focus ring for keyboard users only */
+:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+/* Headings get focus programmatically on screen change (for screen readers);
+   they should not show a ring. */
+[tabindex="-1"]:focus { outline: none; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* ---------------------------------------------------------------------
+   5. The scene: sky, sun, hills
+   Layer order (back to front): sky, sun, back hill, front hill, card.
+   --------------------------------------------------------------------- */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 72%);
+}
+
+/* The sun. Its vertical position is driven by --sun-rise (0 to 1), which
+   app.js sets per screen. Because --sun-rise is a registered number, it
+   animates smoothly every time it changes. */
+.sun {
+  --sun-size: clamp(112px, 30vmin, 200px);
+  /* Where the sun's center sits at rise 0 (hidden behind the back hill)
+     and at rise 1 (high in the sky, above the card) */
+  --horizon: 52svh;
+  --zenith: 13svh;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--sun-size);
+  height: var(--sun-size);
+  z-index: 1;
+  transform:
+    translate(-50%, -50%)
+    translateY(calc(var(--horizon) - var(--sun-rise) * (var(--horizon) - var(--zenith))));
+}
+
+.sun__core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, var(--sun-core) 0 45%, var(--sun-edge) 100%);
+  box-shadow: 0 0 40px 10px var(--sun-edge);
+}
+
+/* A big soft halo that grows brighter as the sun climbs */
+.sun__glow {
+  position: absolute;
+  inset: -75%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sun-edge) 0%, transparent 62%);
+  opacity: calc(0.35 + var(--sun-rise) * 0.5);
+  animation: sun-breathe 7s ease-in-out infinite alternate;
+}
+
+@keyframes sun-breathe {
+  from { transform: scale(0.94); }
+  to   { transform: scale(1.06); }
+}
+
+.hill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+}
+/* Tall hills: the back ridge sits ~44% down the screen, just above the card,
+   and the rest shows softly through the frosted glass. */
+.hill--back  { height: 76svh; z-index: 2; }
+.hill--front { height: 58svh; z-index: 3; }
+.hill--back  path { fill: var(--hill-back); }
+.hill--front path { fill: var(--hill-front); }
+
+
+/* ---------------------------------------------------------------------
+   6. Stage + glass card
+   Mobile: the card sits in the lower part of the screen, over the hills,
+   leaving the top third for the sun. Safe-area padding clears the notch
+   and home indicator.
+   --------------------------------------------------------------------- */
+.stage {
+  position: relative;
+  z-index: 4;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding:
+    max(32svh, calc(env(safe-area-inset-top) + 24px))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 22px 22px;
+  border-radius: var(--radius-card);
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow:
+    0 24px 60px -24px rgba(91, 63, 99, 0.38),
+    0 2px 8px rgba(91, 63, 99, 0.06);
+  overflow: hidden;
+  /* app.js animates height between screens so the card resizes smoothly */
+  transition: height 0.38s var(--ease-soft);
+}
+
+
+/* ---------------------------------------------------------------------
+   7. Screens (one visible at a time, cross-fading)
+   --------------------------------------------------------------------- */
+.screen {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.26s ease, transform 0.26s ease;
+}
+.screen.is-visible {
+  opacity: 1;
+  transform: none;
+  transition-duration: 0.45s;
+}
+.screen[hidden] { display: none; }
+
+
+/* ---------------------------------------------------------------------
+   8. Typography
+   --------------------------------------------------------------------- */
+.title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(30px, 8.4vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* The name inside a heading: italic serif */
+.name-accent { font-style: italic; }
+
+.lead {
+  color: var(--text-soft);
+  font-size: 17px;
+  line-height: 1.55;
+  margin-bottom: 22px;
+}
+
+
+/* ---------------------------------------------------------------------
+   9. Name input + error hint
+   24px font so iOS Safari does not zoom in when the field is focused.
+   --------------------------------------------------------------------- */
+.field-input {
+  display: block;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px 18px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.3;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid rgba(91, 63, 99, 0.16);
+  border-radius: var(--radius-input);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.field-input::placeholder {
+  color: rgba(124, 98, 132, 0.62);
+  opacity: 1;
+}
+.field-input:focus {
+  outline: none;
+  border-color: var(--button);
+  box-shadow: 0 0 0 4px rgba(91, 63, 99, 0.12);
+}
+.field-input[aria-invalid="true"] { border-color: var(--button); }
+
+.hint {
+  min-height: 24px;            /* reserves space so the button doesn't jump */
+  margin: 8px 4px 12px;
+  color: var(--button);        /* the accent color */
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------------------
+   10. Buttons
+   Pills, at least 54px tall; they squish a little when pressed.
+   --------------------------------------------------------------------- */
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.2;
+  border-radius: var(--radius-pill);
+  touch-action: manipulation;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn--primary {
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 28px;
+  background: var(--button);
+  color: var(--on-button);
+  box-shadow: 0 12px 24px -12px var(--button);
+}
+
+/* Text-link style button, still a 48px tap target */
+.btn--link {
+  min-height: 48px;
+  padding: 10px 14px;
+  background: none;
+  color: var(--text-soft);
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: underline;
+  text-decoration-color: rgba(124, 98, 132, 0.4);
+  text-underline-offset: 4px;
+}
+.btn--link:hover { color: var(--text); }
+
+.actions--row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.actions--row .btn--primary { flex: 1; }
+
+.actions--stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+
+/* ---------------------------------------------------------------------
+   11. Sky tiles (2 x 2 radio group)
+   Each tile has data-sky, so the theme blocks above give it its own
+   colors for the preview and its own accent for the selected border.
+   --------------------------------------------------------------------- */
+.sky-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+  border-radius: var(--radius-tile);
+  touch-action: manipulation;
+  transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.15s ease;
+}
+.tile:active { transform: scale(0.97); }
+.tile[aria-checked="true"] {
+  border-color: var(--button);
+  background: rgba(255, 255, 255, 0.85);
+}
+.tile:focus-visible { border-radius: var(--radius-tile); }
+
+.tile__label { padding: 0 4px; }
+
+/* Mini sky preview: gradient, a tiny glowing sun, two hills */
+.tile__swatch {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  height: 66px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+}
+.tile__swatch::before,
+.tile__swatch::after {
+  content: "";
+  position: absolute;
+  width: 95%;
+  height: 56px;
+  border-radius: 50%;
+}
+.tile__swatch::before {           /* back hill */
+  left: -22%;
+  bottom: -28px;
+  background: var(--hill-back);
+  z-index: 1;
+}
+.tile__swatch::after {            /* front hill */
+  right: -24%;
+  bottom: -34px;
+  background: var(--hill-front);
+  z-index: 2;
+}
+.tile__sun {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sun-core) 40%, var(--sun-edge) 100%);
+  box-shadow: 0 0 12px 5px var(--sun-edge);
+  z-index: 0;
+}
+.tile__check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--button);
+  color: var(--on-button);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease, transform 0.25s var(--ease-soft);
+}
+.tile__check svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tile[aria-checked="true"] .tile__check {
+  opacity: 1;
+  transform: none;
+}
+
+
+/* ---------------------------------------------------------------------
+   12. Greeting screen
+   --------------------------------------------------------------------- */
+.greet-time {
+  color: var(--text-soft);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.greet-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(46px, 14vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin: 2px 0 16px;
+  overflow-wrap: anywhere;
+}
+
+.welcome {
+  color: var(--text-soft);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.message {
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.day-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 22px;
+  color: var(--text-soft);
+  font-size: 15px;
+}
+/* a tiny sun dot before the day counter */
+.day-line::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sun-edge);
+  box-shadow: 0 0 8px 2px var(--sun-edge);
+}
+
+
+/* ---------------------------------------------------------------------
+   13. Falling petals (created by app.js, removed when done)
+   Outer span falls; inner <i> sways and spins. They drift in front of the
+   sky and hills but behind the glass card, so the text stays easy to read.
+   --------------------------------------------------------------------- */
+.petals {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+.petal {
+  position: absolute;
+  top: -30px;
+  left: var(--x);
+  opacity: 0;
+  animation: petal-fall var(--dur) linear var(--delay) forwards;
+}
+.petal i {
+  display: block;
+  width: var(--size);
+  height: calc(var(--size) * 1.3);
+  background: var(--c);
+  border-radius: 80% 0 80% 0;
+  box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.45);
+  animation: petal-sway var(--sway) ease-in-out infinite alternate;
+}
+
+@keyframes petal-fall {
+  0%   { transform: translateY(0);     opacity: 0; }
+  8%   { opacity: 0.95; }
+  85%  { opacity: 0.9; }
+  100% { transform: translateY(110vh); opacity: 0; }
+}
+@keyframes petal-sway {
+  from { transform: translateX(-18px) rotate(-25deg); }
+  to   { transform: translateX(18px)  rotate(40deg); }
+}
+
+
+/* ---------------------------------------------------------------------
+   14. Toast
+   --------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px));
+  z-index: 10;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 14px 22px;
+  border-radius: var(--radius-pill);
+  background: rgba(91, 63, 99, 0.94);
+  color: var(--on-button);
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 14px 30px -12px rgba(91, 63, 99, 0.5);
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.35s var(--ease-soft);
+}
+.toast.is-shown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+
+/* ---------------------------------------------------------------------
+   15. Desktop (720px and up)
+   Card centered, sun a little smaller and higher so it sits above it.
+   --------------------------------------------------------------------- */
+@media (min-width: 720px) {
+  .stage {
+    padding-top: 34svh;
+    padding-bottom: max(7svh, env(safe-area-inset-bottom));
+  }
+  .card { padding: 36px 36px 30px; }
+  .sun { --sun-size: clamp(130px, 20vmin, 190px); --horizon: 50svh; }
+  .title { font-size: 38px; }
+  .greet-name { font-size: 64px; }
+}
+
+
+/* ---------------------------------------------------------------------
+   16. Short phones (e.g. iPhone SE, 667px tall)
+   Tighten the card a little so the sun keeps some sky above it.
+   --------------------------------------------------------------------- */
+@media (max-width: 719px) and (max-height: 700px) {
+  .stage { padding-top: max(20svh, calc(env(safe-area-inset-top) + 24px)); }
+  .card { padding: 22px 18px 18px; }
+  .title { font-size: 28px; margin-bottom: 8px; }
+  .lead { font-size: 16px; margin-bottom: 16px; }
+  .tile__swatch { height: 52px; }
+  .sky-grid { gap: 10px; margin-bottom: 14px; }
+  .greet-name { font-size: 44px; }
+  .day-line { margin: 14px 0 16px; }
+}
+
+
+/* ---------------------------------------------------------------------
+   17. Reduced motion
+   No petals, no breathing glow, and everything else nearly instant.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-fade: 0.15s;
+    --sun-speed: 0.15s;
+  }
+  .sun__glow { animation: none; }
+  .petals { display: none; }
+  .screen,
+  .screen.is-visible { transform: none; transition-duration: 0.12s; }
+  .card { transition: none; }
+  .btn:active,
+  .tile:active { transform: none; }
+}

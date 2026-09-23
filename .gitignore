@@ -1,0 +1,11 @@
+# Vercel
+.vercel
+
+# Dependencies (none yet, but just in case)
+node_modules/
+
+# OS / editor clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/

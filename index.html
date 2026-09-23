@@ -1,0 +1,151 @@
+<!doctype html>
+<!--
+  Little Sunshine: welcome + name page (Step 1)
+  A soft morning sky, a sun that rises as you move through three screens,
+  and a glass card that greets you by name.
+-->
+<html lang="en" data-sky="peach">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport-fit=cover lets the sky run under the iPhone notch; safe-area padding keeps content clear of it -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Phone status bar color. app.js keeps this in sync with the chosen sky. -->
+  <meta name="theme-color" content="#FFD8BE">
+  <meta name="description" content="A little place made just for you.">
+  <title>Little Sunshine</title>
+
+  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+
+  <!-- Fonts: Fraunces for headings and the name, Nunito for everything else -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Loaded in <head> on purpose (no defer): it applies the saved sky before the
+       first paint so returning visitors never see a flash of the default colors. -->
+  <script src="app.js"></script>
+
+  <!-- If JavaScript is off, at least show the first screen -->
+  <noscript><style>.screen--name { opacity: 1; transform: none; }</style></noscript>
+</head>
+<body>
+
+  <!-- ============ The scene: sky, sun, and two rolling hills (decorative) ============ -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <!-- The sun sits between the sky and the hills, so it rises from behind them -->
+    <div class="sun">
+      <div class="sun__glow"></div>
+      <div class="sun__core"></div>
+    </div>
+
+    <svg class="hill hill--back" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 70 C60 40 130 30 200 52 C270 74 330 40 400 48 L400 200 L0 200 Z"/>
+    </svg>
+    <svg class="hill hill--front" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C80 50 150 60 220 85 C290 110 350 70 400 60 L400 200 L0 200 Z"/>
+    </svg>
+  </div>
+
+  <!-- ============ The glass card holding the three screens ============ -->
+  <main class="stage">
+    <div class="card" id="card">
+
+      <!-- Screen 1: Name -->
+      <section class="screen screen--name" id="screen-name" aria-labelledby="name-title">
+        <h1 class="title" id="name-title" tabindex="-1" data-focus>
+          Hello, <span class="name-accent" id="name-echo">you</span>.
+        </h1>
+        <p class="lead">This little place is made just for you. What should I call you?</p>
+
+        <form id="name-form" novalidate>
+          <label class="visually-hidden" for="name-input">Your name or nickname</label>
+          <input
+            class="field-input"
+            id="name-input"
+            name="name"
+            type="text"
+            maxlength="24"
+            placeholder="Your name or nickname"
+            autocomplete="nickname"
+            autocapitalize="words"
+            spellcheck="false"
+            enterkeyhint="next"
+            aria-describedby="name-hint">
+          <!-- Error message lives here; aria-live so screen readers hear it -->
+          <p class="hint" id="name-hint" aria-live="polite"></p>
+          <button class="btn btn--primary" type="submit">Continue</button>
+        </form>
+      </section>
+
+      <!-- Screen 2: Pick your sky -->
+      <section class="screen" id="screen-sky" aria-labelledby="sky-title" hidden>
+        <h1 class="title" id="sky-title" tabindex="-1" data-focus>
+          Pick your sky, <span class="name-accent" data-name>friend</span>.
+        </h1>
+        <p class="lead">This will be the color of your days here. You can change it anytime.</p>
+
+        <!-- A real radio group: one tab stop, arrow keys move the selection -->
+        <div class="sky-grid" id="sky-grid" role="radiogroup" aria-labelledby="sky-title">
+          <button class="tile" type="button" role="radio" aria-checked="true" tabindex="0" data-sky="peach">
+            <span class="tile__swatch" aria-hidden="true">
+              <span class="tile__sun"></span>
+              <span class="tile__check"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
+            </span>
+            <span class="tile__label">Peach sunrise</span>
+          </button>
+          <button class="tile" type="button" role="radio" aria-checked="false" tabindex="-1" data-sky="lavender">
+            <span class="tile__swatch" aria-hidden="true">
+              <span class="tile__sun"></span>
+              <span class="tile__check"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
+            </span>
+            <span class="tile__label">Lavender dusk</span>
+          </button>
+          <button class="tile" type="button" role="radio" aria-checked="false" tabindex="-1" data-sky="sea">
+            <span class="tile__swatch" aria-hidden="true">
+              <span class="tile__sun"></span>
+              <span class="tile__check"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
+            </span>
+            <span class="tile__label">Sea breeze</span>
+          </button>
+          <button class="tile" type="button" role="radio" aria-checked="false" tabindex="-1" data-sky="mint">
+            <span class="tile__swatch" aria-hidden="true">
+              <span class="tile__sun"></span>
+              <span class="tile__check"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></span>
+            </span>
+            <span class="tile__label">Mint garden</span>
+          </button>
+        </div>
+
+        <div class="actions actions--row">
+          <button class="btn btn--link" type="button" id="sky-back">Back</button>
+          <button class="btn btn--primary" type="button" id="sky-choose">Choose this sky</button>
+        </div>
+      </section>
+
+      <!-- Screen 3: Personal greeting -->
+      <section class="screen" id="screen-greet" aria-labelledby="greet-name" hidden>
+        <p class="greet-time" id="greet-time">Good morning,</p>
+        <h1 class="greet-name" id="greet-name" tabindex="-1" data-focus>friend</h1>
+        <p class="welcome" id="greet-welcome" hidden></p>
+        <p class="message" id="greet-message"></p>
+        <p class="day-line" id="greet-day"></p>
+
+        <div class="actions actions--stack">
+          <button class="btn btn--primary" type="button" id="open-day">Open my day</button>
+          <button class="btn btn--link" type="button" id="change-setup">Change name or sky</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Small toast for "coming soon" notes; role=status announces it politely -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+</body>
+</html>
