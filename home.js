@@ -1,7 +1,8 @@
 /* =====================================================================
    Little Sunshine: home.js (the "Today" page)
    Reads the saved profile, applies the sky, fills in the header, the
-   quote of the day, and wires up the bottom navigation.
+   quote of the day, today's poem, "Tap for a smile", and wires up the
+   bottom navigation.
 
    Loaded in <head> without defer. The top part runs right away (redirect
    if there is no profile, apply the sky before first paint); the rest
@@ -16,6 +17,19 @@
   const STORAGE_KEY = 'littleSunshine:v1';
   const FAVORITES_KEY = 'littleSunshine:favorites';
   const QUOTES_URL = 'data/quotes.json';
+  const POEMS_URL = 'data/poems.json';
+  const COMPLIMENTS_URL = 'data/compliments.json';
+
+  // Used by "Tap for a smile" until compliments.json loads (or if it can't)
+  const FALLBACK_SMILES = [
+    "You're doing better than you think.",
+    'Someone is glad you exist today.',
+    "You're here, and that's enough.",
+  ];
+
+  // Burst particle colors: pink, peach, butter, lavender, mint (like the welcome petals)
+  const PETAL_COLORS = ['#F7B9C8', '#FFCBA4', '#FFE8A3', '#D6C6F2', '#BFE3CC'];
+  const BURST_COUNT = 12;
 
   // statusBar is used for <meta name="theme-color"> (it's the sky's top color)
   const SKIES = {
@@ -53,8 +67,8 @@
     }
   }
 
-  // Favorites are a list of { type, text, author, savedAt }.
-  // `type` ("quote" for now) lets poems and other things share the list later.
+  // Favorites are one shared list of { type, text, author, savedAt }.
+  // `type` is "quote" or "poem" (a poem's text is its lines joined with line breaks).
   function loadFavorites() {
     try {
       const list = JSON.parse(localStorage.getItem(FAVORITES_KEY));
@@ -71,6 +85,30 @@
     } catch (err) {
       return false;
     }
+  }
+
+
+  function isFavorite(type, text) {
+    return loadFavorites().some((f) => f.type === type && f.text === text);
+  }
+
+  // Adds the item if it isn't saved yet, removes it if it is.
+  // Returns true/false for the new saved state, or null if storage failed.
+  function toggleFavorite(item) {
+    const list = loadFavorites();
+    const index = list.findIndex((f) => f.type === item.type && f.text === item.text);
+    if (index >= 0) {
+      list.splice(index, 1);
+    } else {
+      list.push({
+        type: item.type,
+        text: item.text,
+        author: item.author || '',
+        savedAt: new Date().toISOString(),
+      });
+    }
+    if (!saveFavorites(list)) return null;
+    return index < 0;
   }
 
 
@@ -141,6 +179,17 @@
     const weekday = date.toLocaleDateString('en-GB', { weekday: 'long' });
     const month = date.toLocaleDateString('en-GB', { month: 'long' });
     return weekday + ', ' + date.getDate() + ' ' + month;
+  }
+
+  // Fetch a JSON array and keep only the items that pass `isValid`.
+  // Throws if the file is missing, broken, or has no usable items.
+  async function loadJsonList(url, isValid) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const data = await response.json();
+    const clean = (Array.isArray(data) ? data : []).filter(isValid);
+    if (!clean.length) throw new Error('No items in ' + url);
+    return clean;
   }
 
   function wait(ms) {
@@ -215,6 +264,12 @@
     }
 
 
+    // Heart buttons show their saved state with aria-pressed (CSS fills the heart)
+    function setPressed(button, on) {
+      button.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+
+
     /* ---------------- Quote of the day ---------------- */
     const quoteEls = {
       figure: $('quote'),
@@ -230,24 +285,12 @@
     let quotes = [];
     let currentQuote = null;
 
-    // Load quotes.json; resolves to a clean array, or throws if unusable
-    async function loadQuotes() {
-      const response = await fetch(QUOTES_URL);
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      const data = await response.json();
-      const clean = (Array.isArray(data) ? data : []).filter(
-        (q) => q && typeof q.text === 'string' && q.text.trim()
-      );
-      if (!clean.length) throw new Error('No quotes');
-      return clean;
+    function isValidQuote(q) {
+      return q && typeof q.text === 'string' && q.text.trim() !== '';
     }
 
     function formatQuote(quote) {
       return '“' + quote.text + '”' + (quote.author ? ' — ' + quote.author : '');
-    }
-
-    function isQuoteSaved(quote) {
-      return loadFavorites().some((f) => f.type === 'quote' && f.text === quote.text);
     }
 
     function renderQuote(quote) {
@@ -259,28 +302,16 @@
     }
 
     function updateSaveButton() {
-      const saved = isQuoteSaved(currentQuote);
-      quoteEls.save.setAttribute('aria-pressed', saved ? 'true' : 'false');
+      setPressed(quoteEls.save, isFavorite('quote', currentQuote.text));
     }
 
     function toggleSaveQuote() {
-      const list = loadFavorites();
-      const index = list.findIndex((f) => f.type === 'quote' && f.text === currentQuote.text);
-      if (index >= 0) {
-        list.splice(index, 1);
-      } else {
-        list.push({
-          type: 'quote',
-          text: currentQuote.text,
-          author: currentQuote.author || '',
-          savedAt: new Date().toISOString(),
-        });
-      }
-      if (!saveFavorites(list)) {
+      const saved = toggleFavorite({ type: 'quote', text: currentQuote.text, author: currentQuote.author });
+      if (saved === null) {
         showToast("I couldn't save that on this device, sorry.");
         return;
       }
-      updateSaveButton();
+      setPressed(quoteEls.save, saved);
     }
 
     async function copyQuote() {
@@ -319,7 +350,7 @@
 
     async function setupQuoteCard() {
       try {
-        quotes = await loadQuotes();
+        quotes = await loadJsonList(QUOTES_URL, isValidQuote);
       } catch (err) {
         showQuoteFallback();
         return;
@@ -338,6 +369,127 @@
     }
 
 
+    /* ---------------- Today's little poem ---------------- */
+    const poemEls = {
+      poem: $('poem'),
+      fallback: $('poem-fallback'),
+      actions: $('poem-actions'),
+      save: $('poem-save'),
+    };
+    let poemText = '';
+
+    function isValidPoem(p) {
+      return p && Array.isArray(p.lines) && p.lines.length > 0 &&
+        p.lines.every((line) => typeof line === 'string');
+    }
+
+    // One <span> per line; CSS puts each on its own line
+    function renderPoem(poem) {
+      poemEls.poem.replaceChildren(...poem.lines.map((line) => {
+        const span = document.createElement('span');
+        span.className = 'poem__line';
+        span.textContent = line;
+        return span;
+      }));
+      poemText = poem.lines.join('\n');
+      setPressed(poemEls.save, isFavorite('poem', poemText));
+    }
+
+    function toggleSavePoem() {
+      const saved = toggleFavorite({ type: 'poem', text: poemText });
+      if (saved === null) {
+        showToast("I couldn't save that on this device, sorry.");
+        return;
+      }
+      setPressed(poemEls.save, saved);
+    }
+
+    async function setupPoemCard() {
+      let poems;
+      try {
+        poems = await loadJsonList(POEMS_URL, isValidPoem);
+      } catch (err) {
+        poemEls.fallback.hidden = false;
+        return;
+      }
+
+      renderPoem(pickForToday(poems, 'poem'));
+      poemEls.poem.hidden = false;
+      poemEls.actions.hidden = false;
+      poemEls.save.addEventListener('click', toggleSavePoem);
+    }
+
+
+    /* ---------------- Tap for a smile ---------------- */
+    const smileEls = {
+      button: $('smile-btn'),
+      burst: $('smile-burst'),
+      message: $('smile-message'),
+    };
+    let smiles = FALLBACK_SMILES;
+    let lastSmile = '';
+
+    // Any item from the list except the one shown last time
+    function pickDifferent(list, previous) {
+      const options = list.length > 1 ? list.filter((item) => item !== previous) : list;
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    // Restart a CSS animation class, even if it's already on the element
+    function replayClass(el, className) {
+      el.classList.remove(className);
+      void el.offsetWidth; // force a reflow so the animation starts again
+      el.classList.add(className);
+    }
+
+    function createParticle(index) {
+      const particle = document.createElement('span');
+      const isHeart = index % 2 === 0;
+      // Evenly spread around the circle, with a little wobble
+      const angle = (index / BURST_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const distance = 110 + Math.random() * 40; // px from the center (button radius is 80)
+
+      particle.className = 'smile-particle ' + (isHeart ? 'smile-particle--heart' : 'smile-particle--petal');
+      particle.style.setProperty('--dx', (Math.cos(angle) * distance).toFixed(1) + 'px');
+      particle.style.setProperty('--dy', (Math.sin(angle) * distance).toFixed(1) + 'px');
+      particle.style.setProperty('--rot', Math.round((Math.random() - 0.5) * 120) + 'deg');
+      particle.style.setProperty('--delay', Math.round(Math.random() * 60) + 'ms');
+      if (!isHeart) {
+        particle.style.setProperty('--c', PETAL_COLORS[index % PETAL_COLORS.length]);
+      }
+      return particle;
+    }
+
+    // 12 hearts and petals fly out of the sun, then clean themselves up
+    function burst() {
+      const group = document.createElement('div');
+      group.className = 'smile-burst-group';
+      for (let i = 0; i < BURST_COUNT; i++) group.appendChild(createParticle(i));
+      smileEls.burst.appendChild(group);
+      setTimeout(() => group.remove(), 1100);
+    }
+
+    function showSmile() {
+      const message = pickDifferent(smiles, lastSmile);
+      lastSmile = message;
+      smileEls.message.textContent = message;
+
+      if (reducedMotion.matches) return; // just change the message
+      replayClass(smileEls.button, 'is-squished');
+      replayClass(smileEls.message, 'is-new');
+      burst();
+    }
+
+    async function setupSmile() {
+      smileEls.button.addEventListener('click', showSmile);
+      try {
+        smiles = await loadJsonList(COMPLIMENTS_URL, (m) => typeof m === 'string' && m.trim() !== '');
+      } catch (err) {
+        // Keep the small built-in list; the button still works
+      }
+    }
+
+
     /* ---------------- Bottom navigation ---------------- */
     // Tabs that don't have a page yet
     function wireNavigation() {
@@ -351,5 +503,7 @@
     fillHeader();
     wireNavigation();
     setupQuoteCard();
+    setupPoemCard();
+    setupSmile();
   });
 })();

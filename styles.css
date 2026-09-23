@@ -941,3 +941,188 @@ input { font: inherit; color: inherit; }
   .icon-btn:active { transform: none; }
   .icon-btn--heart[aria-pressed="true"] svg { animation: none; }
 }
+
+
+/* =====================================================================
+   20. Today's little poem card (home.html)
+   Reuses .quote-actions, .icon-btn--heart and .card-fallback from above.
+   ===================================================================== */
+.poem-card {
+  position: relative;          /* anchors the corner flower */
+}
+.poem-card .home-card__title {
+  padding-right: 52px;         /* keeps the title clear of the flower */
+}
+
+.poem {
+  margin: 18px 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.8;
+  text-align: center;
+  color: var(--text);
+}
+.poem[hidden] { display: none; }
+.poem__line { display: block; }
+
+/* Hand-drawn-style flower: wobbly strokes in the sky's accent color */
+.poem-flower {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 58px;
+  height: 58px;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+.poem-flower path,
+.poem-flower circle {
+  stroke: var(--button);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.poem-flower__petal {
+  fill: var(--button);
+  fill-opacity: 0.16;
+}
+.poem-flower__stem {
+  fill: none;
+  stroke-opacity: 0.8;
+}
+.poem-flower__heart {
+  fill: var(--sun-edge);
+}
+
+
+/* =====================================================================
+   21. Tap for a smile (home.html)
+   A big sun button on the sky. Each tap: squish, a burst of hearts and
+   petals, and a new message below.
+   ===================================================================== */
+.smile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 0 8px;
+}
+
+.smile__stage {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.smile__sun {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 160px;
+  height: 160px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  touch-action: manipulation;
+  background: radial-gradient(circle at 42% 38%, var(--sun-core) 0 42%, var(--sun-edge) 100%);
+  box-shadow:
+    0 0 36px 10px var(--sun-edge),
+    0 14px 30px -14px rgba(91, 63, 99, 0.35);
+}
+.smile__sun:focus-visible {
+  outline-offset: 8px;
+  border-radius: 50%;
+}
+.smile__sun.is-squished {
+  animation: smile-squish 0.45s var(--ease-soft);
+}
+@keyframes smile-squish {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.94); }
+  65%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.smile__face {
+  width: 104px;
+  height: 104px;
+}
+.smile__line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.smile__cheek {
+  fill: #F7B9C8;
+  opacity: 0.7;
+}
+
+/* Burst layer sits over the button; particles start at its center */
+.smile__burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.smile-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  opacity: 0;
+  animation: smile-burst 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay) both;
+}
+.smile-particle--heart {
+  background: var(--button);
+  clip-path: path("M7 13C7 13 0 8.6 0 4.2A3.6 3.6 0 0 1 7 2.8A3.6 3.6 0 0 1 14 4.2C14 8.6 7 13 7 13Z");
+}
+.smile-particle--petal {
+  width: 11px;
+  height: 15px;
+  margin: -7px 0 0 -5px;
+  background: var(--c);
+  border-radius: 80% 0 80% 0;
+  box-shadow: inset -2px -2px 3px rgba(255, 255, 255, 0.45);
+}
+@keyframes smile-burst {
+  0% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * 0.45), calc(var(--dy) * 0.45)) scale(0.4) rotate(0deg);
+  }
+  18% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--rot));
+  }
+}
+
+.smile__message {
+  max-width: 320px;
+  min-height: 3.2em;            /* room for two lines, so nothing jumps */
+  margin-top: 26px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--text);
+}
+.smile__message.is-new {
+  animation: smile-message-in 0.45s ease both;
+}
+@keyframes smile-message-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smile__sun.is-squished,
+  .smile__message.is-new { animation: none; }
+  .smile__burst { display: none; }
+}

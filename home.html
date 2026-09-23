@@ -96,8 +96,54 @@
         </div>
       </section>
 
-      <section class="card home-card" aria-labelledby="card-poem-title">
+      <section class="card home-card poem-card" aria-labelledby="card-poem-title">
+        <!-- Hand-drawn-style flower in the corner, colored by the sky's accent -->
+        <svg class="poem-flower" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <path class="poem-flower__stem" d="M31 38c1 7-2 12 0 22M31 50c-5-5-10-5-13-3 4 3 9 4 13 3"/>
+          <path class="poem-flower__petal" d="M31 27c-4-6-4-14 1-16 5 1 5 9 0 16z"/>
+          <path class="poem-flower__petal" d="M34 29c5-5 13-6 15-1-1 5-9 6-15 1z"/>
+          <path class="poem-flower__petal" d="M33 33c6 4 8 11 4 14-5 0-7-7-4-14z"/>
+          <path class="poem-flower__petal" d="M29 33c-3 6-10 10-14 7 0-5 7-8 14-7z"/>
+          <path class="poem-flower__petal" d="M28 29c-6-2-12-7-9-11 5-1 9 5 9 11z"/>
+          <circle class="poem-flower__heart" cx="31.5" cy="30" r="3.6"/>
+        </svg>
+
         <h2 class="home-card__title" id="card-poem-title">Today's little poem</h2>
+
+        <!-- Filled by home.js: one line per span -->
+        <p class="poem" id="poem" hidden></p>
+
+        <!-- Shown only if data/poems.json can't be loaded -->
+        <p class="card-fallback" id="poem-fallback" hidden>Your poem is resting today. Try refreshing.</p>
+
+        <div class="quote-actions" id="poem-actions" hidden>
+          <button class="icon-btn icon-btn--heart" type="button" id="poem-save"
+                  aria-label="Save poem to favorites" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 20s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Tap for a smile (on the sky, no card) -->
+      <section class="smile" aria-labelledby="smile-title">
+        <h2 class="visually-hidden" id="smile-title">Tap for a smile</h2>
+
+        <div class="smile__stage">
+          <button class="smile__sun" type="button" id="smile-btn" aria-label="Tap for a smile">
+            <svg class="smile__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <circle class="smile__cheek" cx="28" cy="58" r="7"/>
+              <circle class="smile__cheek" cx="72" cy="58" r="7"/>
+              <path class="smile__line" d="M30 45c3-5 9-5 12 0M58 45c3-5 9-5 12 0"/>
+              <path class="smile__line" d="M38 60c6 8 18 8 24 0"/>
+            </svg>
+          </button>
+          <!-- Hearts and petals are added here on each tap, then removed -->
+          <div class="smile__burst" id="smile-burst" aria-hidden="true"></div>
+        </div>
+
+        <p class="smile__message" id="smile-message" aria-live="polite">Tap the sun.</p>
       </section>
 
       <section class="card home-card" aria-labelledby="card-art-title">
