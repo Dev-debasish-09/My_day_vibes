@@ -1,29 +1,22 @@
 /* =====================================================================
    Little Sunshine: app.js
    Handles the three screens, the rising sun, sky themes, the greeting,
-   petals, and saving { name, sky, joinedDate } in localStorage.
+   petals, and saving { name, sky, joinedDate } (storage, skies, and the
+   theme itself live in shared.js, window.LittleSunshine).
 
-   This file is loaded in <head> without defer. The top part runs right
+   This file is loaded in <head> without defer, after shared.js. The top part runs right
    away (to apply the saved sky before first paint); the rest waits for
    DOMContentLoaded.
    ===================================================================== */
 (function () {
   'use strict';
 
+  const { SKIES, cleanName, todayKey, loadProfile, saveProfile, applySky } = window.LittleSunshine;
+
   /* -------------------------------------------------------------------
      Content + settings
      ------------------------------------------------------------------- */
-  const STORAGE_KEY = 'littleSunshine:v1';
-  const MAX_NAME = 24;
-
-  // Order here = order of the tiles = arrow-key order.
-  // statusBar is used for <meta name="theme-color"> (it's the sky's top color).
-  const SKIES = {
-    peach:    { label: 'Peach sunrise', statusBar: '#FFD8BE' },
-    lavender: { label: 'Lavender dusk', statusBar: '#D9CCF5' },
-    sea:      { label: 'Sea breeze',    statusBar: '#CDE7F5' },
-    mint:     { label: 'Mint garden',   statusBar: '#CFE3D4' },
-  };
+  // Order of the skies in shared.js = order of the tiles = arrow-key order.
   const SKY_KEYS = Object.keys(SKIES);
 
   const GREETINGS = {
@@ -78,49 +71,8 @@
 
 
   /* -------------------------------------------------------------------
-     Storage (always wrapped in try/catch: private mode, blocked storage,
-     or a full quota must never break the page)
-     ------------------------------------------------------------------- */
-  function loadProfile() {
-    try {
-      const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (!data || typeof data.name !== 'string') return null;
-      const name = cleanName(data.name);
-      if (!name) return null;
-      return {
-        name: name,
-        sky: SKIES[data.sky] ? data.sky : 'peach',
-        joinedDate: /^\d{4}-\d{2}-\d{2}$/.test(data.joinedDate) ? data.joinedDate : todayKey(),
-      };
-    } catch (err) {
-      return null;
-    }
-  }
-
-  function saveProfile(profile) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    } catch (err) {
-      /* Storage unavailable: the page still works, it just won't remember. */
-    }
-  }
-
-
-  /* -------------------------------------------------------------------
      Small helpers
      ------------------------------------------------------------------- */
-  // Collapse inner spaces, trim, and cap the length
-  function cleanName(value) {
-    return String(value).replace(/\s+/g, ' ').trim().slice(0, MAX_NAME);
-  }
-
-  // Local date as "YYYY-MM-DD"
-  function todayKey(date) {
-    const d = date || new Date();
-    const pad = (n) => String(n).padStart(2, '0');
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  }
-
   // Day 1 = the day you joined. Uses UTC math on calendar dates so
   // daylight-saving changes can't make a day count twice.
   function dayNumber(joinedDate) {
@@ -148,14 +100,8 @@
 
 
   /* -------------------------------------------------------------------
-     Theme + sun (these touch only <html>, so they work before the body exists)
+     Sun (touches only <html>, so it works before the body exists)
      ------------------------------------------------------------------- */
-  function applySky(key) {
-    root.setAttribute('data-sky', key);
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', SKIES[key].statusBar);
-  }
-
   function setSunRise(value) {
     root.style.setProperty('--sun-rise', String(value));
   }

@@ -3,19 +3,22 @@
    Reads the saved profile, applies the sky, fills in the header, the
    quote of the day, today's poem, "Tap for a smile", today's art, the
    tiny kindness, and wires up the bottom navigation.
-   The art itself is drawn by art.js (window.LittleSunshineArt).
+   The art itself is drawn by art.js (window.LittleSunshineArt); the
+   profile, sky, toast, and bottom navigation come from shared.js
+   (window.LittleSunshine).
 
-   Loaded in <head> without defer. The top part runs right away (redirect
-   if there is no profile, apply the sky before first paint); the rest
-   waits for DOMContentLoaded.
+   Loaded in <head> without defer, after shared.js. The top part runs
+   right away (apply the sky before first paint); the rest waits for
+   DOMContentLoaded.
    ===================================================================== */
 (function () {
   'use strict';
 
+  const { loadProfile, applySky, showToast, renderBottomNav, todayKey } = window.LittleSunshine;
+
   /* -------------------------------------------------------------------
-     Settings (same storage key and skies as app.js)
+     Settings
      ------------------------------------------------------------------- */
-  const STORAGE_KEY = 'littleSunshine:v1';
   const FAVORITES_KEY = 'littleSunshine:favorites';
   const KINDNESS_KEY = 'littleSunshine:kindness';
   const QUOTES_URL = 'data/quotes.json';
@@ -37,14 +40,6 @@
   // Wallpaper export size (portrait phone screen)
   const WALLPAPER = { width: 1080, height: 1920 };
 
-  // statusBar is used for <meta name="theme-color"> (it's the sky's top color)
-  const SKIES = {
-    peach:    { statusBar: '#FFD8BE' },
-    lavender: { statusBar: '#D9CCF5' },
-    sea:      { statusBar: '#CDE7F5' },
-    mint:     { statusBar: '#CFE3D4' },
-  };
-
   const GREETINGS = {
     morning:   'Good morning,',
     afternoon: 'Good afternoon,',
@@ -60,19 +55,6 @@
      Storage (always wrapped in try/catch: private mode or blocked
      storage must never break the page)
      ------------------------------------------------------------------- */
-  function loadProfile() {
-    try {
-      const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (!data || typeof data.name !== 'string' || !data.name.trim()) return null;
-      return {
-        name: data.name.trim(),
-        sky: SKIES[data.sky] ? data.sky : 'peach',
-      };
-    } catch (err) {
-      return null;
-    }
-  }
-
   // Favorites are one shared list of { type, text, author, savedAt }.
   // `type` is "quote" or "poem" (a poem's text is its lines joined with line breaks).
   function loadFavorites() {
@@ -145,13 +127,6 @@
      Reused by the other cards later.
      ------------------------------------------------------------------- */
 
-  // Local date as "YYYY-MM-DD"
-  function todayKey() {
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2, '0');
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  }
-
   // Turns today's date (e.g. "2026-09-24") into a whole number.
   // `salt` is optional: pass a card name ("quote", "poem") so different
   // cards don't all move in step with each other.
@@ -194,14 +169,6 @@
   /* -------------------------------------------------------------------
      Small helpers
      ------------------------------------------------------------------- */
-  function applySky(key) {
-    // The sky themes live on <html>, like on the welcome page, so the
-    // page background and the overscroll color match too.
-    root.setAttribute('data-sky', key);
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', SKIES[key].statusBar);
-  }
-
   function partOfDay(hour) {
     if (hour >= 5 && hour < 12) return 'morning';
     if (hour >= 12 && hour < 17) return 'afternoon';
@@ -260,13 +227,11 @@
 
 
   /* -------------------------------------------------------------------
-     Run immediately: no profile means go back to the welcome page
+     Run immediately (shared.js has already sent visitors with no
+     profile back to the welcome page)
      ------------------------------------------------------------------- */
   const profile = loadProfile();
-  if (!profile) {
-    window.location.replace('./');
-    return;
-  }
+  if (!profile) return;
 
   applySky(profile.sky);
   root.style.setProperty('--sun-rise', '1'); // sun high in the sky
@@ -277,8 +242,6 @@
      ------------------------------------------------------------------- */
   document.addEventListener('DOMContentLoaded', function init() {
     const $ = (id) => document.getElementById(id);
-    const toast = $('toast');
-    let toastTimer = 0;
 
 
     /* ---------------- Header ---------------- */
@@ -287,15 +250,6 @@
       $('home-greeting').textContent = GREETINGS[partOfDay(now.getHours())];
       $('home-name').textContent = profile.name;
       $('home-date').textContent = formatDate(now);
-    }
-
-
-    /* ---------------- Toast ---------------- */
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add('is-shown');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('is-shown'), 3200);
     }
 
 
@@ -685,18 +639,9 @@
     }
 
 
-    /* ---------------- Bottom navigation ---------------- */
-    // Tabs that don't have a page yet
-    function wireNavigation() {
-      document.querySelectorAll('[data-soon]').forEach((tab) => {
-        tab.addEventListener('click', () => showToast('This page is coming soon.'));
-      });
-    }
-
-
     /* ---------------- Start ---------------- */
     fillHeader();
-    wireNavigation();
+    renderBottomNav('today');
     setupQuoteCard();
     setupPoemCard();
     setupSmile();
