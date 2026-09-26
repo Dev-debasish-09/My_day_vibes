@@ -11,7 +11,7 @@
    "A fresh version is ready. Tap to refresh."
    If you add a new file, also add it to APP_FILES.
    ===================================================================== */
-const CACHE_VERSION = 'sunshine-v3';
+const CACHE_VERSION = 'sunshine-v4';
 
 // Every file the app uses (paths are relative, so it also works in a sub-folder)
 const APP_FILES = [
@@ -48,6 +48,7 @@ const APP_FILES = [
   'fonts/fraunces-italic-latin-ext.woff2',
   'fonts/nunito-latin.woff2',
   'fonts/nunito-latin-ext.woff2',
+  'fonts/dancing-script-latin.woff2',
   // Icons, images, manifest
   'favicon.ico',
   'icons/icon.svg',

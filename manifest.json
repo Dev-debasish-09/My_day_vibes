@@ -1,7 +1,8 @@
 {
   "name": "Little Sunshine",
   "short_name": "Sunshine",
-  "description": "A little place to feel lighter every day.",
+  "author": "Debasish",
+  "description": "A little place to feel lighter every day. Made with love by Debasish.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

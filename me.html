@@ -15,6 +15,7 @@
   <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
   <meta name="theme-color" content="#FFD8BE">
   <meta name="description" content="Your little corner of Little Sunshine.">
+  <meta name="author" content="Debasish">
   <title>Me · Little Sunshine</title>
 
   <!-- Icons and the app manifest (installable, works offline) -->
@@ -337,6 +338,21 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- ---------- About ----------
+           The signature writes itself the first time the card scrolls into view
+           (me.js). Tapping it five times: a little thank-you. -->
+      <section class="card home-card about" id="about" aria-labelledby="about-title">
+        <h2 class="home-card__title" id="about-title">About Little Sunshine</h2>
+        <p class="about__note">I made this little place for the days that feel heavy. I hope it makes yours a bit lighter, the way it does mine.</p>
+        <button class="about__signature" type="button" id="signature" aria-label="Debasish's signature">
+          <svg class="about__svg" viewBox="0 0 320 76" aria-hidden="true" focusable="false">
+            <text class="about__signature-text" x="160" y="54" text-anchor="middle">Debasish</text>
+          </svg>
+          <span class="about__hearts" id="signature-hearts" aria-hidden="true"></span>
+        </button>
+        <p class="about__credit">Creator of Little Sunshine · 2026</p>
       </section>
 
       <!-- ---------- Support ---------- -->

@@ -29,7 +29,8 @@
   const BREATHS_KEY = 'littleSunshine:breaths';     // written by breathe.js
   const REMINDER_KEY = 'littleSunshine:reminderTime'; // "08:00"
 
-  const SHARE_TEXT = 'I made a little place that makes my days lighter. Try it:';
+  const SHARE_TEXT = 'Little Sunshine, a little place to feel lighter every day. Made by Debasish. Try it:';
+  const SIGNATURE_TAPS = 5; // taps on the signature for the little thank-you
 
   const REMINDER = {
     title: 'Your little sunshine is waiting ☀️',
@@ -363,6 +364,9 @@
       reminderTime: $('reminder-time'),
       reminderAdd: $('reminder-add'),
       share: $('share-button'),
+      about: $('about'),
+      signature: $('signature'),
+      hearts: $('signature-hearts'),
       qrWrap: $('share-qr-wrap'),
       qr: $('share-qr'),
     };
@@ -622,6 +626,57 @@
     }
 
 
+    /* ---------------- About: the signature ---------------- */
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // Written by hand the first time the card is on screen (instantly with reduced motion)
+    function setupSignature() {
+      if (reducedMotion.matches || !('IntersectionObserver' in window)) return;
+      els.about.classList.add('is-waiting');
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        observer.disconnect();
+        // Wait for the script font, so the pen draws the real letters
+        const fontReady = document.fonts && document.fonts.load
+          ? document.fonts.load('600 35px "Dancing Script"').catch(() => {})
+          : Promise.resolve();
+        fontReady.then(() => {
+          els.about.classList.remove('is-waiting');
+          els.about.classList.add('is-writing');
+        });
+      }, { threshold: 0.6 });
+      observer.observe(els.signature);
+    }
+
+    // Five quick taps: hearts, and a thank-you
+    let taps = 0;
+    let tapTimer = 0;
+    function onSignatureTap() {
+      taps += 1;
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => { taps = 0; }, 1500); // taps must be close together
+      if (taps < SIGNATURE_TAPS) return;
+      taps = 0;
+      showToast('Thank you for being here \u2661');
+      if (reducedMotion.matches) return;
+      const group = document.createElement('div');
+      group.className = 'about__burst';
+      for (let i = 0; i < 12; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'smile-particle smile-particle--heart';
+        const angle = (i / 12) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const distance = 70 + Math.random() * 50;
+        heart.style.setProperty('--dx', (Math.cos(angle) * distance).toFixed(1) + 'px');
+        heart.style.setProperty('--dy', (Math.sin(angle) * distance * 0.7 - 20).toFixed(1) + 'px');
+        heart.style.setProperty('--rot', Math.round((Math.random() - 0.5) * 90) + 'deg');
+        heart.style.setProperty('--delay', Math.round(Math.random() * 80) + 'ms');
+        group.appendChild(heart);
+      }
+      els.hearts.appendChild(group);
+      setTimeout(() => group.remove(), 1200);
+    }
+
+
     /* ---------------- Settings: reset everything ---------------- */
     function setResetOpen(open) {
       els.resetConfirm.hidden = !open;
@@ -652,12 +707,14 @@
     showSound(loadSoundOn());
     els.reminderTime.value = loadReminderTime();
     showQr();
+    setupSignature();
 
     els.moods.addEventListener('change', onMoodChange);
     els.sound.addEventListener('click', toggleSound);
     els.reminderTime.addEventListener('change', saveReminderTime);
     els.reminderAdd.addEventListener('click', addReminder);
     els.share.addEventListener('click', shareApp);
+    els.signature.addEventListener('click', onSignatureTap);
     els.resetOpen.addEventListener('click', () => setResetOpen(true));
     els.resetCancel.addEventListener('click', () => setResetOpen(false));
     els.resetYes.addEventListener('click', resetEverything);

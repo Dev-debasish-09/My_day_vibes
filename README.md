@@ -10,6 +10,8 @@ are made with the Web Audio API, and a service worker keeps a copy of every file
 
 Live: <https://my-day-vibes.vercel.app/>
 
+Made with ♡ by Debasish.
+
 ## Pages
 
 | Page           | What it does                                                          |
@@ -37,7 +39,7 @@ Live: <https://my-day-vibes.vercel.app/>
 | `data/`             | Quotes, poems, compliments, and kindness ideas (JSON)            |
 | `service-worker.js` | Offline: saves every file (`APP_FILES`), cache first, then network |
 | `manifest.json`     | Install as an app (name, colors, icons)                          |
-| `fonts/`            | Fraunces and Nunito (woff2), loaded with `@font-face` in `styles.css` |
+| `fonts/`            | Fraunces, Nunito, and Dancing Script (the signature only), as woff2, loaded with `@font-face` in `styles.css` |
 | `icons/`            | App icon (SVG + 180, 192, 512 and maskable 512 PNGs); `favicon.ico` |
 | `images/preview.png`| Link preview picture (1200×630)                                  |
 | `lib/qrcode.js`     | QR codes for "Share Little Sunshine" (MIT, by Kazuhiko Arase)    |
@@ -46,7 +48,7 @@ Live: <https://my-day-vibes.vercel.app/>
 ## Changing anything? Bump the version
 
 Every time you change **any** file, open `service-worker.js` and change
-`CACHE_VERSION` (for example `sunshine-v2` → `sunshine-v3`). Phones then download the
+`CACHE_VERSION` (it is `sunshine-v4` now, so next time `sunshine-v5`). Phones then download the
 new version in the background and show "A fresh version is ready. Tap to refresh."
 If you add a new file, also add it to `APP_FILES` in the same file.
 

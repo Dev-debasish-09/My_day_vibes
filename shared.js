@@ -413,6 +413,10 @@
 
   registerServiceWorker();
 
+  // A little hello for anyone who opens the browser console
+  console.log('%c\u2600\ufe0f Little Sunshine, made with love by Debasish.',
+    'color: #A9455D; font: 600 14px Nunito, system-ui, sans-serif; padding: 4px 0;');
+
 
   window.LittleSunshine = {
     SITE_URL: SITE_URL,
