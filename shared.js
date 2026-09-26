@@ -1,7 +1,8 @@
 /* =====================================================================
    Little Sunshine: shared.js
    The bits every page needs: the saved profile, sky themes, the toast,
-   and the bottom navigation. Exposed as window.LittleSunshine.
+   the bottom navigation, the floating light in the sky, and haptics.
+   Exposed as window.LittleSunshine.
 
    Load it in <head> without defer, before the page's own script. The
    top part runs right away: on every page except the welcome page
@@ -28,21 +29,23 @@
     mint:     { label: 'Mint garden',   statusBar: '#CFE3D4' },
   };
 
-  // Bottom navigation, left to right
+  // Bottom navigation, left to right. Shapes with class "tab__fill"
+  // gently fill with the accent color on the active tab.
   const TABS = [
     {
       key: 'today',
       label: 'Today',
       href: 'home.html',
-      icon: '<circle cx="12" cy="12" r="4"/>' +
+      icon: '<circle class="tab__fill" cx="12" cy="12" r="4"/>' +
         '<path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/>',
     },
     {
       key: 'joy',
       label: 'Joy Jar',
       href: 'joy.html',
-      icon: '<path d="M8 3.5h8M9 3.5v3c-2.4 1-4 3.3-4 6.2V17a3.5 3.5 0 0 0 3.5 3.5h7A3.5 3.5 0 0 0 19 17v-4.3c0-2.9-1.6-5.2-4-6.2v-3"/>' +
-        '<path d="M12 16.2c-1.6-1-2.6-2-2.6-3.1a1.3 1.3 0 0 1 2.6-.4 1.3 1.3 0 0 1 2.6.4c0 1.1-1 2.1-2.6 3.1z"/>',
+      icon: '<path d="M8 3.5h8"/>' +
+        '<path class="tab__fill" d="M9 3.5v3c-2.4 1-4 3.3-4 6.2V17a3.5 3.5 0 0 0 3.5 3.5h7A3.5 3.5 0 0 0 19 17v-4.3c0-2.9-1.6-5.2-4-6.2v-3"/>' +
+        '<path class="tab__fill" d="M12 16.2c-1.6-1-2.6-2-2.6-3.1a1.3 1.3 0 0 1 2.6-.4 1.3 1.3 0 0 1 2.6.4c0 1.1-1 2.1-2.6 3.1z"/>',
     },
     {
       key: 'breathe',
@@ -56,10 +59,30 @@
       key: 'me',
       label: 'Me',
       href: 'me.html',
-      icon: '<circle cx="12" cy="8.5" r="3.8"/>' +
-        '<path d="M4.5 20c.8-3.6 3.8-5.8 7.5-5.8s6.7 2.2 7.5 5.8"/>',
+      icon: '<circle class="tab__fill" cx="12" cy="8.5" r="3.8"/>' +
+        '<path class="tab__fill" d="M4.5 20c.8-3.6 3.8-5.8 7.5-5.8s6.7 2.2 7.5 5.8"/>',
     },
   ];
+
+  // Floating light (bokeh) in the sky: where each circle sits (% of the
+  // screen), how big it is, its color, how strongly it shows, and how
+  // far and how slowly it drifts. Fixed values, so every page matches.
+  const BOKEH = [
+    { x: 12, y: 14, size: 150, c: '--sun-core',  o: 0.4,  dx: 30,  dy: 18,  dur: 38 },
+    { x: 84, y: 10, size: 110, c: '--sun-edge',  o: 0.32, dx: -24, dy: 22,  dur: 46 },
+    { x: 70, y: 32, size: 190, c: '#FFFFFF',     o: 0.28, dx: -34, dy: -16, dur: 52 },
+    { x: 26, y: 40, size: 90,  c: '--sun-edge',  o: 0.35, dx: 22,  dy: -20, dur: 34 },
+    { x: 52, y: 6,  size: 70,  c: '#FFFFFF',     o: 0.4,  dx: 18,  dy: 14,  dur: 30 },
+    { x: 92, y: 46, size: 130, c: '--hill-back', o: 0.25, dx: -20, dy: -24, dur: 44 },
+    { x: 6,  y: 58, size: 120, c: '--sun-core',  o: 0.3,  dx: 26,  dy: -14, dur: 48 },
+  ];
+
+  // Taps that get a tiny vibration (where the phone supports it): the
+  // nav, main buttons, hearts, the smile sun, check-ins and choices
+  const HAPTIC_TAPS = [
+    '.tab', '.btn--primary', '.icon-btn--heart', '.smile__sun',
+    '.kindness__input', '.mood__input', '.pill__input', '#breath-stop',
+  ].join(', ');
 
   const root = document.documentElement;
 
@@ -239,6 +262,55 @@
 
 
   /* -------------------------------------------------------------------
+     Floating light: soft circles drifting behind the sun and hills.
+     Added to the page's .scene; styles.css draws and moves them (and
+     hides them with reduced motion).
+     ------------------------------------------------------------------- */
+  function addFloatingLight() {
+    const scene = document.querySelector('.scene');
+    if (!scene || scene.querySelector('.bokeh-layer')) return;
+
+    const layer = document.createElement('div');
+    layer.className = 'bokeh-layer';
+    BOKEH.forEach((b, i) => {
+      const dot = document.createElement('span');
+      dot.className = 'bokeh';
+      const style = dot.style;
+      style.setProperty('--x', b.x + '%');
+      style.setProperty('--y', b.y + '%');
+      style.setProperty('--size', b.size + 'px');
+      style.setProperty('--c', b.c.startsWith('--') ? 'var(' + b.c + ')' : b.c);
+      style.setProperty('--o', String(b.o));
+      style.setProperty('--dx', b.dx + 'px');
+      style.setProperty('--dy', b.dy + 'px');
+      style.setProperty('--dur', b.dur + 's');
+      // Start each one part-way through its drift, so they don't move in step
+      style.setProperty('--delay', -(i * 7) + 's');
+      layer.appendChild(dot);
+    });
+
+    // Just above the sky gradient: behind the sun and the hills
+    const sky = scene.querySelector('.sky');
+    scene.insertBefore(layer, sky ? sky.nextSibling : scene.firstChild);
+  }
+
+
+  /* -------------------------------------------------------------------
+     Haptics: a tiny tap (10ms) on important taps, if the phone can
+     ------------------------------------------------------------------- */
+  function haptic() {
+    try {
+      if (typeof navigator.vibrate === 'function') navigator.vibrate(10);
+    } catch (err) { /* no vibration here: nothing to do */ }
+  }
+
+  function onTap(event) {
+    const target = event.target instanceof Element ? event.target : null;
+    if (target && target.closest(HAPTIC_TAPS)) haptic();
+  }
+
+
+  /* -------------------------------------------------------------------
      Run immediately: no saved name means go back to the welcome page
      ------------------------------------------------------------------- */
   const isWelcomePage = /(^|\/)(index(\.html)?)?$/.test(window.location.pathname);
@@ -246,8 +318,15 @@
     window.location.replace('./');
   }
 
-  // Make sure the toast exists before anything is announced in it
-  document.addEventListener('DOMContentLoaded', getToast);
+  // Make sure the toast exists before anything is announced in it,
+  // and light up the sky
+  document.addEventListener('DOMContentLoaded', () => {
+    getToast();
+    addFloatingLight();
+  });
+
+  // One listener for every page's haptic taps
+  document.addEventListener('click', onTap);
 
 
   window.LittleSunshine = {
@@ -263,5 +342,6 @@
     applySky: applySky,
     showToast: showToast,
     renderBottomNav: renderBottomNav,
+    haptic: haptic,
   };
 })();

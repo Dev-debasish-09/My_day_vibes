@@ -223,6 +223,51 @@ input { font: inherit; color: inherit; }
 .hill--front path { fill: var(--hill-front); }
 
 
+/* ---- Paper grain: a very faint noise over the sky, sun, and hills,
+   so the gradients feel soft and printed. The noise is an SVG
+   feTurbulence tile; opacity keeps it at 5%. ---- */
+.scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* ---- Floating light: soft bokeh circles drifting very slowly in the
+   sky, behind the sun and hills. shared.js adds them and sets each
+   one's --x, --y, --size, --c, --o, --dur, --delay, --dx and --dy. ---- */
+.bokeh-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.bokeh {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--c) 0%, color-mix(in srgb, var(--c) 45%, transparent) 42%, transparent 70%);
+  opacity: var(--o);
+  filter: blur(4px);
+  animation: bokeh-drift var(--dur) ease-in-out var(--delay) infinite alternate;
+  will-change: transform;
+}
+@keyframes bokeh-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(var(--dx), var(--dy)) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bokeh-layer { display: none; }
+}
+
+
 /* ---------------------------------------------------------------------
    6. Stage + glass card
    Mobile: the card sits in the lower part of the screen, over the hills,
@@ -254,9 +299,13 @@ input { font: inherit; color: inherit; }
   border: 1px solid rgba(255, 255, 255, 0.65);
   -webkit-backdrop-filter: blur(18px) saturate(1.15);
   backdrop-filter: blur(18px) saturate(1.15);
+  /* Layered shadow (contact, soft lift, long fall) plus a thin white
+     highlight along the top edge, like light catching the glass */
   box-shadow:
-    0 24px 60px -24px rgba(91, 63, 99, 0.38),
-    0 2px 8px rgba(91, 63, 99, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(91, 63, 99, 0.06),
+    0 8px 24px -8px rgba(91, 63, 99, 0.18),
+    0 24px 48px -24px rgba(91, 63, 99, 0.22);
   overflow: hidden;
   /* app.js animates height between screens so the card resizes smoothly */
   transition: height 0.38s var(--ease-soft);
@@ -713,15 +762,31 @@ input { font: inherit; color: inherit; }
     max(16px, env(safe-area-inset-left));
 }
 
-/* ---- Header (directly on the sky, centered over the sun) ---- */
+/* ---- Header (directly on the sky, centered over the sun) ----
+   Every tab page uses the same three lines: a small soft-plum line,
+   a large Fraunces title, and a one-line description. */
 .home-header {
   text-align: center;
   margin-bottom: 28px;
 }
-.home-header .greet-name {
-  margin: 2px 0 6px;
+.page-eyebrow {
+  color: var(--text-soft);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
-.home-date {
+.page-title {
+  margin: 4px 0 8px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(42px, 12vw, 58px);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.page-lead {
   color: var(--text-soft);
   font-size: 16px;
   font-weight: 600;
@@ -822,6 +887,43 @@ input { font: inherit; color: inherit; }
   background: rgba(255, 255, 255, 0.75);
 }
 
+/* Active tab: a small glowing dot above the icon... */
+.tab { position: relative; }
+.tab.is-active::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: var(--button);
+  box-shadow: 0 0 6px 1px var(--button);
+  animation: tab-dot 0.4s var(--ease-soft) backwards;
+}
+@keyframes tab-dot {
+  from { opacity: 0; transform: scale(0); }
+}
+
+/* ...and the icon gently fills in with the accent color (shapes marked
+   .tab__fill in shared.js; the Breathe icon is open lines, so its
+   strokes just get a touch bolder) */
+.tab__fill { fill: currentColor; fill-opacity: 0; }
+.tab.is-active .tab__fill {
+  fill-opacity: 0.28;
+  animation: tab-fill 0.6s ease 0.1s backwards;
+}
+@keyframes tab-fill {
+  from { fill-opacity: 0; }
+}
+.tab.is-active .tab__icon { stroke-width: 2; }
+
+/* Pressing a tab squishes it */
+.tab__icon { transition: background-color 0.2s ease, transform 0.18s var(--ease-soft); }
+.tab:active { transform: scale(0.95); }
+.tab:active .tab__icon { transform: scale(1.08, 0.86); }
+
 /* Toast floats above the nav on this page */
 .page-home .toast {
   bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 14px);
@@ -833,7 +935,10 @@ input { font: inherit; color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tab:active { transform: none; }
+  .tab:active,
+  .tab:active .tab__icon { transform: none; }
+  .tab.is-active::before,
+  .tab.is-active .tab__fill { animation: none; }
 }
 
 
@@ -1298,31 +1403,17 @@ input { font: inherit; color: inherit; }
 
 
 /* =====================================================================
-   24. Today page polish: entrance and breathing sun (home.html)
-   CSS animations run once when the page loads, never again on scroll.
-   `backwards` holds the "before" state during each delay and leaves no
+   24. Tab pages: entrance and breathing sun
+   Switching tabs loads a new page; its content fades in with a small
+   upward drift (300ms) over the sky, which is already in place. The
+   nav sits outside .home, so it stays still. `backwards` leaves no
    styles behind afterwards.
    ===================================================================== */
-
-/* Header first, then each section 80ms after the one before */
-.page-home .home-header {
-  animation: home-enter 0.7s var(--ease-soft) backwards;
+.page-home .home {
+  animation: page-enter 0.3s var(--ease-soft) backwards;
 }
-.page-home .home-cards > *,
-.page-home .home-footer {
-  animation: home-enter 0.6s var(--ease-soft) backwards;
-  animation-delay: calc(250ms + var(--enter-step, 0) * 80ms);
-}
-.page-home .home-cards > :nth-child(1) { --enter-step: 0; }
-.page-home .home-cards > :nth-child(2) { --enter-step: 1; }
-.page-home .home-cards > :nth-child(3) { --enter-step: 2; }
-.page-home .home-cards > :nth-child(4) { --enter-step: 3; }
-.page-home .home-cards > :nth-child(5) { --enter-step: 4; }
-.page-home .home-cards > :nth-child(6) { --enter-step: 5; }
-.page-home .home-footer              { --enter-step: 5; }
-
-@keyframes home-enter {
-  from { opacity: 0; transform: translateY(14px); }
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -1342,9 +1433,7 @@ input { font: inherit; color: inherit; }
 .tab { min-height: 62px; font-size: 16px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-home .home-header,
-  .page-home .home-cards > *,
-  .page-home .home-footer,
+  .page-home .home,
   .page-home .sun__glow { animation: none; }
 }
 
@@ -1354,16 +1443,6 @@ input { font: inherit; color: inherit; }
    Uses the Today page layout (body has .page-home too), .card,
    .home-card__title, .btn--primary / --soft / --link and the toast.
    ===================================================================== */
-.joy-title {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(40px, 11vw, 52px);
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-  margin: 0 0 6px;
-}
-
 /* ---- The jar ---- */
 .jar {
   display: flex;
@@ -1615,7 +1694,7 @@ input { font: inherit; color: inherit; }
 
 /* =====================================================================
    26. Breathe page (breathe.html)
-   Uses the Today page layout (body has .page-home too), .joy-title,
+   Uses the Today page layout (body has .page-home too), the page header,
    .card, .btn--primary / --soft / --link.
    The circle's size follows data-phase on .breath; --phase-ms (set by
    breathe.js) is how long each change takes: 4s in, 4s hold, 6s out.
@@ -1820,7 +1899,7 @@ input { font: inherit; color: inherit; }
 
 /* =====================================================================
    27. Me page (me.html)
-   Uses the Today page layout (body has .page-home too), .greet-name,
+   Uses the Today page layout (body has .page-home too), the page header,
    .card, .home-card__title, the buttons, .card-fallback, and the
    .joy-list rows (for favorites).
    Mood colors are the same in every sky, and none of them reads as
@@ -1838,8 +1917,6 @@ input { font: inherit; color: inherit; }
 [data-mood="okay"]     { --mood: var(--mood-okay); }
 [data-mood="good"]     { --mood: var(--mood-good); }
 [data-mood="great"]    { --mood: var(--mood-great); }
-
-.page-me .home-header .greet-name { margin-bottom: 4px; }
 
 /* ---- Mood check-in: five faces ---- */
 .moods {
