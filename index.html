@@ -8,19 +8,44 @@
 <head>
   <meta charset="utf-8">
   <!-- viewport-fit=cover lets the sky run under the iPhone notch; safe-area padding keeps content clear of it -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <!-- Light only: a phone in dark mode must not recolor the sky -->
+  <meta name="color-scheme" content="light">
   <!-- Phone status bar color. app.js keeps this in sync with the chosen sky. -->
   <meta name="theme-color" content="#FFD8BE">
   <meta name="description" content="A little place made just for you.">
   <title>Little Sunshine</title>
 
-  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+  <!-- Link previews (messages, social apps).
+       SITE LINK: https://my-day-vibes.vercel.app/  <- if the site moves, change the two
+       lines marked below, and SITE_URL at the top of shared.js. (Previews need a full
+       address here: the apps that read these tags don't run JavaScript.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Little Sunshine">
+  <meta property="og:title" content="Little Sunshine">
+  <meta property="og:description" content="A little place to feel lighter every day.">
+  <meta property="og:url" content="https://my-day-vibes.vercel.app/">                  <!-- site link -->
+  <meta property="og:image" content="https://my-day-vibes.vercel.app/images/preview.png"> <!-- site link -->
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A soft peach sky with a sun rising over pink hills, and the words Little Sunshine.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Little Sunshine">
+  <meta name="twitter:description" content="A little place to feel lighter every day.">
+  <meta name="twitter:image" content="https://my-day-vibes.vercel.app/images/preview.png">
 
-  <!-- Fonts: Fraunces for headings and the name, Nunito for everything else -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+  <!-- Icons and the app manifest (installable, works offline) -->
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Sunshine">
+
+  <!-- Fonts are saved with the app (see @font-face in styles.css), so they work offline.
+       Preloading the two used first avoids a visible font swap. -->
+  <link rel="preload" href="fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fraunces-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="styles.css">
 

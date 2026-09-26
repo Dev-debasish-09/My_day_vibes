@@ -8,19 +8,26 @@
 <html lang="en" data-sky="peach">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <!-- Light only: a phone in dark mode must not recolor the sky -->
+  <meta name="color-scheme" content="light">
   <!-- Phone status bar color. home.js keeps this in sync with the saved sky. -->
   <meta name="theme-color" content="#FFD8BE">
   <meta name="description" content="Your little page for today.">
   <title>Today · Little Sunshine</title>
 
-  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+  <!-- Icons and the app manifest (installable, works offline) -->
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Sunshine">
 
-  <!-- Fonts: Fraunces for headings and the name, Nunito for everything else -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+  <!-- Fonts are saved with the app (see @font-face in styles.css), so they work offline.
+       Preloading the two used first avoids a visible font swap. -->
+  <link rel="preload" href="fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fraunces-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="styles.css">
 

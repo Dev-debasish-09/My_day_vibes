@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Little Sunshine: a glowing sun rising over soft pink hills on a peach sky -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFD8BE"/>
+      <stop offset="1" stop-color="#F7C6C7"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.45" r="0.55">
+      <stop offset="0.45" stop-color="#FFF6D8"/>
+      <stop offset="1" stop-color="#FFD29A"/>
+    </radialGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#FFE7B8"/>
+      <stop offset="0.5" stop-color="#FFD29A" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFD29A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <circle cx="256" cy="282" r="176" fill="url(#glow)"/>
+  <circle cx="256" cy="282" r="96" fill="url(#sun)"/>
+  <path d="M0 338 C90 290 178 280 262 310 C346 340 424 298 512 306 V512 H0 Z" fill="#F3B5BC"/>
+  <path d="M0 392 C100 350 190 360 280 390 C368 420 440 380 512 370 V512 H0 Z" fill="#E99AA8"/>
+</svg>

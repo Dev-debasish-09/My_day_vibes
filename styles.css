@@ -5,6 +5,63 @@
 
 
 /* ---------------------------------------------------------------------
+   0. Fonts, saved with the app (fonts/), so they work offline.
+   Fraunces for headings, Nunito for everything else. Each comes in a
+   basic Latin file and an extended Latin file (accented names);
+   the browser only downloads the one it needs. Nunito is one variable
+   file for every weight used (400 to 700).
+   --------------------------------------------------------------------- */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/fraunces-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/fraunces-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/fraunces-italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/fraunces-italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("fonts/nunito-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("fonts/nunito-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+
+/* ---------------------------------------------------------------------
    1. Registered custom properties
    @property tells the browser these are colors / numbers, so they can
    be animated. That is what makes the sky gradient cross-fade smoothly
@@ -16,7 +73,7 @@
 @property --hill-front { syntax: '<color>';  inherits: true; initial-value: #E99AA8; }
 @property --sun-core   { syntax: '<color>';  inherits: true; initial-value: #FFF6D8; }
 @property --sun-edge   { syntax: '<color>';  inherits: true; initial-value: #FFD29A; }
-@property --button     { syntax: '<color>';  inherits: true; initial-value: #C4506C; }
+@property --button     { syntax: '<color>';  inherits: true; initial-value: #A9455D; }
 /* 0 = sun hidden behind the hills, 1 = sun high in the sky */
 @property --sun-rise   { syntax: '<number>'; inherits: true; initial-value: 0; }
 
@@ -25,11 +82,79 @@
    2. Design tokens
    --------------------------------------------------------------------- */
 :root {
-  /* Text + glass card */
+  /* Text + glass card.
+     Contrast (WCAG AA, 4.5:1) is checked on all four skies:
+     --text-soft on any card, --text-on-sky on bare sky and both hills
+     (text there can scroll over the darker front hill). */
   --text: #5B3F63;
-  --text-soft: #7C6284;
-  --card: rgba(255, 251, 246, 0.72);
+  --text-soft: #6E5576;
+  --text-on-sky: #452F4B;
+  --card: rgb(var(--cream-rgb) / 0.72);
   --on-button: #FFFBF6;
+
+  /* The same colors as channels, for see-through shades:
+     rgb(var(--plum-rgb) / 0.2) is --text at 20% */
+  --plum-rgb: 91 63 99;
+  --soft-rgb: 110 85 118;
+  --white-rgb: 255 255 255;
+  --cream-rgb: 255 251 246;
+  --seal-dark-rgb: 58 31 51;
+
+  /* Paper (notes, letters) */
+  --paper: #FFF8EA;
+  --paper-line: rgb(var(--soft-rgb) / 0.14);
+
+  /* Shadows */
+  --shadow-card:
+    inset 0 1px 0 rgb(var(--white-rgb) / 0.9),
+    0 1px 2px rgb(var(--plum-rgb) / 0.06),
+    0 8px 24px -8px rgb(var(--plum-rgb) / 0.18),
+    0 24px 48px -24px rgb(var(--plum-rgb) / 0.22);
+  --shadow-tile:
+    inset 0 1px 0 rgb(var(--white-rgb) / 0.9),
+    0 1px 2px rgb(var(--plum-rgb) / 0.06),
+    0 8px 20px -10px rgb(var(--plum-rgb) / 0.25);
+  --shadow-paper:
+    0 1px 2px rgb(var(--plum-rgb) / 0.08),
+    0 12px 26px -12px rgb(var(--plum-rgb) / 0.35);
+  --shadow-soft: 0 6px 14px -8px rgb(var(--plum-rgb) / 0.45);
+  --glass-border: 1px solid rgb(var(--white-rgb) / 0.65);
+  --glass-blur: blur(18px) saturate(1.15);
+
+  /* Mood colors: the same in every sky, and none reads as "bad" */
+  --mood-very-low: #C3CBEF;   /* soft blue-lavender */
+  --mood-low:      #D4C4F1;   /* lavender */
+  --mood-okay:     #F6E0A0;   /* butter */
+  --mood-good:     #F9C39C;   /* peach */
+  --mood-great:    #F4A6BE;   /* pink */
+
+  /* Little illustrations (the same in every sky) */
+  --petal-pink: #F7B9C8;
+  --cheek: rgb(244 143 168 / 0.42);
+  --leaf: #9CC8A5;
+  --stem: #7FAE8A;
+  --seed: #B98A62;
+  --cork-dark: #C98F5E;
+  --cork-light: #E2B386;
+  --cork-top: #EDC9A1;
+  --cork-dot: rgb(120 72 40 / 0.45);
+  --envelope-back: #EBD6B4;
+  --envelope-front-1: #F8EBD5;
+  --envelope-front-2: #F1DEC0;
+  --envelope-flap-1: #EAD0A7;
+  --envelope-flap-2: #E2C497;
+  --hand: #FBE3D3;
+  --pastel-pink: #FDE2E7;
+  --pastel-butter: #FFF1C9;
+  --pastel-mint: #DDF0E2;
+  --pastel-lavender: #E7E0F8;
+  --pastel-peach: #FFE3D1;
+  --icon-pink: #EE9BB4;
+  --icon-blue: #8EC0DE;
+  --icon-gold: #EDBB5F;
+  --icon-lilac: #B7A3E3;
+  --icon-peach: #F2A987;
+  --dim: rgb(38 24 48 / 0.25);   /* the sky while breathing */
 
   /* Type */
   --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
@@ -37,8 +162,10 @@
 
   /* Shape */
   --radius-card: 28px;
+  --radius-soft: 22px;         /* smaller cards: tiles, list items, favorites */
   --radius-tile: 20px;
   --radius-input: 16px;
+  --radius-paper: 6px;
   --radius-pill: 999px;
 
   /* Motion */
@@ -47,6 +174,9 @@
   --ease-soft: cubic-bezier(0.22, 0.8, 0.26, 1);
 
   color-scheme: light;
+
+  /* Without @property support these still work; they just snap instead of fading */
+  --sun-rise: 0;
 
   /* The theme colors live on <html>, so this is where they transition.
      Everything that uses var(--sky-top) etc. follows along each frame. */
@@ -72,25 +202,25 @@
   --sky-top: #FFD8BE;  --sky-bottom: #F7C6C7;
   --hill-back: #F3B5BC; --hill-front: #E99AA8;
   --sun-core: #FFF6D8; --sun-edge: #FFD29A;
-  --button: #C4506C;
+  --button: #A9455D;
 }
 [data-sky="lavender"] {
   --sky-top: #D9CCF5;  --sky-bottom: #F4D3E4;
   --hill-back: #C3B2EC; --hill-front: #A994DA;
   --sun-core: #FFF1F6; --sun-edge: #F7C6C7;
-  --button: #7E5EBA;
+  --button: #7155A7;
 }
 [data-sky="sea"] {
   --sky-top: #CDE7F5;  --sky-bottom: #FFF1C1;
   --hill-back: #A8D3E6; --hill-front: #86BCD6;
   --sun-core: #FFFBEA; --sun-edge: #FFE39A;
-  --button: #347896;
+  --button: #306E8A;
 }
 [data-sky="mint"] {
   --sky-top: #CFE3D4;  --sky-bottom: #FFF1C1;
   --hill-back: #AFD3B9; --hill-front: #8DBE9C;
   --sun-core: #FFFBEA; --sun-edge: #FFD8BE;
-  --button: #3E7F55;
+  --button: #38724C;
 }
 
 
@@ -111,7 +241,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100dvh;   /* follows the iPhone address bar, so nothing is cut off */
   background-color: var(--sky-bottom);
   color: var(--text);
   font-family: var(--font-sans);
@@ -278,7 +408,7 @@ input { font: inherit; color: inherit; }
   position: relative;
   z-index: 4;
   min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100dvh;   /* follows the iPhone address bar, so nothing is cut off */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -296,16 +426,12 @@ input { font: inherit; color: inherit; }
   padding: 28px 22px 22px;
   border-radius: var(--radius-card);
   background: var(--card);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  backdrop-filter: blur(18px) saturate(1.15);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   /* Layered shadow (contact, soft lift, long fall) plus a thin white
      highlight along the top edge, like light catching the glass */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(91, 63, 99, 0.06),
-    0 8px 24px -8px rgba(91, 63, 99, 0.18),
-    0 24px 48px -24px rgba(91, 63, 99, 0.22);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
   /* app.js animates height between screens so the card resizes smoothly */
   transition: height 0.38s var(--ease-soft);
@@ -367,19 +493,19 @@ input { font: inherit; color: inherit; }
   font-size: 24px;
   line-height: 1.3;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.75);
-  border: 2px solid rgba(91, 63, 99, 0.16);
+  background: rgb(var(--white-rgb) / 0.75);
+  border: 2px solid rgb(var(--plum-rgb) / 0.16);
   border-radius: var(--radius-input);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .field-input::placeholder {
-  color: rgba(124, 98, 132, 0.62);
+  color: rgb(var(--soft-rgb) / 0.8);
   opacity: 1;
 }
 .field-input:focus {
   outline: none;
   border-color: var(--button);
-  box-shadow: 0 0 0 4px rgba(91, 63, 99, 0.12);
+  box-shadow: 0 0 0 4px rgb(var(--plum-rgb) / 0.12);
 }
 .field-input[aria-invalid="true"] { border-color: var(--button); }
 
@@ -432,7 +558,7 @@ input { font: inherit; color: inherit; }
   font-weight: 600;
   font-size: 16px;
   text-decoration: underline;
-  text-decoration-color: rgba(124, 98, 132, 0.4);
+  text-decoration-color: rgb(var(--soft-rgb) / 0.4);
   text-underline-offset: 4px;
 }
 .btn--link:hover { color: var(--text); }
@@ -477,7 +603,7 @@ input { font: inherit; color: inherit; }
   font-weight: 600;
   font-size: 15px;
   line-height: 1.2;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgb(var(--white-rgb) / 0.5);
   border: 2px solid transparent;
   border-radius: var(--radius-tile);
   touch-action: manipulation;
@@ -486,7 +612,7 @@ input { font: inherit; color: inherit; }
 .tile:active { transform: scale(0.97); }
 .tile[aria-checked="true"] {
   border-color: var(--button);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgb(var(--white-rgb) / 0.85);
 }
 .tile:focus-visible { border-radius: var(--radius-tile); }
 
@@ -641,7 +767,7 @@ input { font: inherit; color: inherit; }
   height: calc(var(--size) * 1.3);
   background: var(--c);
   border-radius: 80% 0 80% 0;
-  box-shadow: inset -2px -2px 4px rgba(255, 255, 255, 0.45);
+  box-shadow: inset -2px -2px 4px rgb(var(--white-rgb) / 0.45);
   animation: petal-sway var(--sway) ease-in-out infinite alternate;
 }
 
@@ -669,12 +795,12 @@ input { font: inherit; color: inherit; }
   max-width: calc(100% - 32px);
   padding: 14px 22px;
   border-radius: var(--radius-pill);
-  background: rgba(91, 63, 99, 0.94);
+  background: rgb(var(--plum-rgb) / 0.94);
   color: var(--on-button);
   font-weight: 600;
   font-size: 15px;
   text-align: center;
-  box-shadow: 0 14px 30px -12px rgba(91, 63, 99, 0.5);
+  box-shadow: 0 14px 30px -12px rgb(var(--plum-rgb) / 0.5);
   opacity: 0;
   transform: translate(-50%, 16px);
   pointer-events: none;
@@ -684,6 +810,23 @@ input { font: inherit; color: inherit; }
   opacity: 1;
   transform: translate(-50%, 0);
 }
+/* A toast you can tap (the "fresh version" offer): stays until tapped */
+.toast.has-action {
+  padding: 0;
+  pointer-events: auto;
+}
+.toast__action {
+  appearance: none;
+  min-height: 48px;
+  padding: 14px 22px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.toast__action:focus-visible { outline-offset: 2px; }
 
 
 /* ---------------------------------------------------------------------
@@ -743,8 +886,10 @@ input { font: inherit; color: inherit; }
    .toast from above. Only layout for the page, the header date, the
    card titles, and the bottom navigation is new here.
    ===================================================================== */
+/* Text on the tab pages stays at 16px or more (nav labels included),
+   so the nav is 76px tall to fit them */
 .page-home {
-  --tabbar-height: 68px;
+  --tabbar-height: 76px;
 }
 
 /* One centered scrolling column over the fixed sky + hills */
@@ -770,13 +915,14 @@ input { font: inherit; color: inherit; }
   margin-bottom: 28px;
 }
 .page-eyebrow {
-  color: var(--text-soft);
+  color: var(--text-on-sky);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 .page-title {
   margin: 4px 0 8px;
+  color: var(--text-on-sky);
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 500;
@@ -787,7 +933,7 @@ input { font: inherit; color: inherit; }
   text-wrap: balance;
 }
 .page-lead {
-  color: var(--text-soft);
+  color: var(--text-on-sky);
   font-size: 16px;
   font-weight: 600;
 }
@@ -828,11 +974,11 @@ input { font: inherit; color: inherit; }
   z-index: 8;
   padding: 6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   background: var(--card);
-  border-top: 1px solid rgba(255, 255, 255, 0.65);
+  border-top: 1px solid rgb(var(--white-rgb) / 0.65);
   border-radius: 24px 24px 0 0;
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow: 0 -10px 30px -18px rgba(91, 63, 99, 0.35);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: 0 -10px 30px -18px rgb(var(--plum-rgb) / 0.35);
 }
 .tabbar__inner {
   display: grid;
@@ -842,20 +988,21 @@ input { font: inherit; color: inherit; }
 }
 
 .tab {
+  position: relative;
   appearance: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 56px;
+  min-height: 62px;
   padding: 6px 4px;
   border: 0;
   border-radius: 16px;
   background: none;
   color: var(--text-soft);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
@@ -863,7 +1010,6 @@ input { font: inherit; color: inherit; }
   touch-action: manipulation;
   transition: color 0.2s ease, transform 0.15s ease;
 }
-.tab:active { transform: scale(0.97); }
 .tab:hover { color: var(--text); }
 .tab:focus-visible { border-radius: 16px; }
 
@@ -872,23 +1018,23 @@ input { font: inherit; color: inherit; }
   width: 44px;
   height: 28px;
   padding: 3px 11px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.18s var(--ease-soft);
 }
 .tab.is-active {
   color: var(--button);
 }
 .tab.is-active .tab__icon {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgb(var(--white-rgb) / 0.75);
+  stroke-width: 2;
 }
 
 /* Active tab: a small glowing dot above the icon... */
-.tab { position: relative; }
 .tab.is-active::before {
   content: "";
   position: absolute;
@@ -917,16 +1063,15 @@ input { font: inherit; color: inherit; }
 @keyframes tab-fill {
   from { fill-opacity: 0; }
 }
-.tab.is-active .tab__icon { stroke-width: 2; }
 
 /* Pressing a tab squishes it */
-.tab__icon { transition: background-color 0.2s ease, transform 0.18s var(--ease-soft); }
 .tab:active { transform: scale(0.95); }
 .tab:active .tab__icon { transform: scale(1.08, 0.86); }
 
 /* Toast floats above the nav on this page */
 .page-home .toast {
   bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 14px);
+  font-size: 16px;
 }
 
 @media (min-width: 720px) {
@@ -1000,14 +1145,14 @@ input { font: inherit; color: inherit; }
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgb(var(--white-rgb) / 0.6);
   color: var(--text-soft);
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 4px 12px -6px rgba(91, 63, 99, 0.35);
+  box-shadow: 0 4px 12px -6px rgb(var(--plum-rgb) / 0.35);
   transition: transform 0.15s ease, color 0.2s ease, background-color 0.2s ease;
 }
-.icon-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.85); }
+.icon-btn:hover { color: var(--text); background: rgb(var(--white-rgb) / 0.85); }
 .icon-btn:active { transform: scale(0.94); }
 .icon-btn:focus-visible { border-radius: 50%; }
 .icon-btn[hidden] { display: none; }
@@ -1134,7 +1279,7 @@ input { font: inherit; color: inherit; }
   background: radial-gradient(circle at 42% 38%, var(--sun-core) 0 42%, var(--sun-edge) 100%);
   box-shadow:
     0 0 36px 10px var(--sun-edge),
-    0 14px 30px -14px rgba(91, 63, 99, 0.35);
+    0 14px 30px -14px rgb(var(--plum-rgb) / 0.35);
 }
 .smile__sun:focus-visible {
   outline-offset: 8px;
@@ -1161,7 +1306,7 @@ input { font: inherit; color: inherit; }
   stroke-linecap: round;
 }
 .smile__cheek {
-  fill: #F7B9C8;
+  fill: var(--petal-pink);
   opacity: 0.7;
 }
 
@@ -1192,7 +1337,7 @@ input { font: inherit; color: inherit; }
   margin: -7px 0 0 -5px;
   background: var(--c);
   border-radius: 80% 0 80% 0;
-  box-shadow: inset -2px -2px 3px rgba(255, 255, 255, 0.45);
+  box-shadow: inset -2px -2px 3px rgb(var(--white-rgb) / 0.45);
 }
 @keyframes smile-burst {
   0% {
@@ -1269,7 +1414,7 @@ input { font: inherit; color: inherit; }
   margin: 0;
   border: 2px solid var(--button);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgb(var(--white-rgb) / 0.7);
   cursor: pointer;
 }
 .kindness__input:checked {
@@ -1363,7 +1508,7 @@ input { font: inherit; color: inherit; }
   border-radius: 20px;
   overflow: hidden;
   background: var(--sky-bottom);   /* shows for a moment before the SVG arrives */
-  box-shadow: 0 12px 28px -18px rgba(91, 63, 99, 0.45);
+  box-shadow: 0 12px 28px -18px rgb(var(--plum-rgb) / 0.45);
   transition: opacity 0.22s ease;
 }
 .art-frame.is-fading { opacity: 0; }
@@ -1386,11 +1531,11 @@ input { font: inherit; color: inherit; }
   width: 100%;
   min-height: 54px;
   padding: 14px 28px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgb(var(--white-rgb) / 0.72);
   color: var(--text);
-  box-shadow: inset 0 0 0 2px rgba(91, 63, 99, 0.12);
+  box-shadow: inset 0 0 0 2px rgb(var(--plum-rgb) / 0.12);
 }
-.btn--soft:hover { background: rgba(255, 255, 255, 0.9); }
+.btn--soft:hover { background: rgb(var(--white-rgb) / 0.9); }
 
 .btn:disabled {
   opacity: 0.6;
@@ -1426,11 +1571,6 @@ input { font: inherit; color: inherit; }
   50%      { transform: scale(1.1);  opacity: 1; }
 }
 
-/* Text on the Today page stays at 16px or more (nav labels included),
-   so the nav gets a little taller to fit them */
-.page-home { --tabbar-height: 76px; }
-.page-home .toast { font-size: 16px; }
-.tab { min-height: 62px; font-size: 16px; }
 
 @media (prefers-reduced-motion: reduce) {
   .page-home .home,
@@ -1445,8 +1585,6 @@ input { font: inherit; color: inherit; }
    .home-card__title, .btn--primary / --soft / --link and the toast.
    ===================================================================== */
 .page-joy {
-  --paper: #FFF8EA;                               /* cream notes and letters */
-  --paper-line: rgba(124, 98, 132, 0.13);         /* faint ruled lines */
   overflow-x: clip;                               /* the jar's glow may reach the screen edge */
 }
 
@@ -1510,20 +1648,20 @@ input { font: inherit; color: inherit; }
 /* Only the stars take taps; the glass details lie over them */
 .jar__deco { pointer-events: none; }
 
-.jar__shadow { fill: rgba(91, 63, 99, 0.16); }
+.jar__shadow { fill: rgb(var(--plum-rgb) / 0.16); }
 
 /* Glass: tinted with the sky, semi-transparent, bright edge */
 .jar__glass {
   fill: url(#glass-fill);
-  stroke: rgba(255, 255, 255, 0.95);
+  stroke: rgb(var(--white-rgb) / 0.95);
   stroke-width: 2.5;
   filter:
-    drop-shadow(0 0 1px rgba(91, 63, 99, 0.3))
-    drop-shadow(0 12px 20px rgba(91, 63, 99, 0.16));
+    drop-shadow(0 0 1px rgb(var(--plum-rgb) / 0.3))
+    drop-shadow(0 12px 20px rgb(var(--plum-rgb) / 0.16));
 }
 .jar__base {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.55);
+  stroke: rgb(var(--white-rgb) / 0.55);
   stroke-width: 4;
   stroke-linecap: round;
 }
@@ -1534,28 +1672,28 @@ input { font: inherit; color: inherit; }
   fill: none;
   stroke-linecap: round;
 }
-.jar__streak { stroke: rgba(255, 255, 255, 0.85); stroke-width: 6; }
-.jar__streak--thin { stroke: rgba(255, 255, 255, 0.55); stroke-width: 2.5; }
-.jar__reflection { stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
+.jar__streak { stroke: rgb(var(--white-rgb) / 0.85); stroke-width: 6; }
+.jar__streak--thin { stroke: rgb(var(--white-rgb) / 0.55); stroke-width: 2.5; }
+.jar__reflection { stroke: rgb(var(--white-rgb) / 0.3); stroke-width: 5; }
 
 /* Rim, cork, ribbon */
 .jar__rim {
-  fill: rgba(255, 255, 255, 0.35);
-  stroke: rgba(255, 255, 255, 0.95);
+  fill: rgb(var(--white-rgb) / 0.35);
+  stroke: rgb(var(--white-rgb) / 0.95);
   stroke-width: 2;
 }
 .jar__cork {
   fill: url(#cork-fill);
-  stroke: rgba(91, 63, 99, 0.25);
+  stroke: rgb(var(--plum-rgb) / 0.25);
   stroke-width: 1;
   stroke-linejoin: round;
 }
 .jar__cork-top {
-  fill: #EDC9A1;
-  stroke: rgba(91, 63, 99, 0.2);
+  fill: var(--cork-top);
+  stroke: rgb(var(--plum-rgb) / 0.2);
   stroke-width: 1;
 }
-.jar__cork-dot { fill: rgba(120, 72, 40, 0.45); }
+.jar__cork-dot { fill: var(--cork-dot); }
 .jar__ribbon { fill: var(--button); }
 .jar__ribbon-knot { filter: brightness(0.88); }
 
@@ -1615,7 +1753,7 @@ input { font: inherit; color: inherit; }
 }
 .jar-star__folds {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.55);
+  stroke: rgb(var(--white-rgb) / 0.55);
   stroke-width: 0.8;
   stroke-linecap: round;
   pointer-events: none;
@@ -1644,7 +1782,7 @@ input { font: inherit; color: inherit; }
   pointer-events: none;
   filter:
     drop-shadow(0 0 6px var(--sun-edge))
-    drop-shadow(0 4px 6px rgba(91, 63, 99, 0.2));
+    drop-shadow(0 4px 6px rgb(var(--plum-rgb) / 0.2));
   will-change: transform;
 }
 .fly-star__paper {
@@ -1690,12 +1828,10 @@ input { font: inherit; color: inherit; }
 .note {
   position: relative;
   padding: 18px 20px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-paper);
   background: var(--paper);
   transform: rotate(-1deg);
-  box-shadow:
-    0 1px 2px rgba(91, 63, 99, 0.08),
-    0 12px 26px -12px rgba(91, 63, 99, 0.35);
+  box-shadow: var(--shadow-paper);
 }
 /* A strip of washi tape holding the note */
 .note::before {
@@ -1707,9 +1843,9 @@ input { font: inherit; color: inherit; }
   height: 22px;
   margin-left: -42px;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--button) 28%, rgba(255, 255, 255, 0.55));
+  background: color-mix(in srgb, var(--button) 28%, rgb(var(--white-rgb) / 0.55));
   transform: rotate(-3deg);
-  box-shadow: 0 1px 2px rgba(91, 63, 99, 0.12);
+  box-shadow: 0 1px 2px rgb(var(--plum-rgb) / 0.12);
 }
 .note:focus-within {
   outline: 3px solid var(--button);
@@ -1748,7 +1884,7 @@ input { font: inherit; color: inherit; }
   line-height: 32px;
 }
 .note__input::placeholder {
-  color: rgba(124, 98, 132, 0.6);
+  color: rgb(var(--soft-rgb) / 0.8);
   opacity: 1;
 }
 .note__input:focus { outline: none; }
@@ -1807,8 +1943,8 @@ input { font: inherit; color: inherit; }
   background: var(--paper);
   transform: rotate(-0.8deg);
   box-shadow:
-    0 1px 2px rgba(91, 63, 99, 0.08),
-    0 8px 16px -10px rgba(91, 63, 99, 0.35);
+    0 1px 2px rgb(var(--plum-rgb) / 0.08),
+    0 8px 16px -10px rgb(var(--plum-rgb) / 0.35);
 }
 .note-item:nth-child(even) { transform: rotate(0.7deg); }
 
@@ -1847,11 +1983,11 @@ input { font: inherit; color: inherit; }
   appearance: none;
   flex: none;
   min-width: 76px;
-  min-height: 44px;
+  min-height: 48px;
   padding: 8px 12px;
   border: 0;
   border-radius: var(--radius-pill);
-  background: rgba(91, 63, 99, 0.06);
+  background: rgb(var(--plum-rgb) / 0.06);
   color: var(--text-soft);
   font-family: var(--font-sans);
   font-weight: 700;
@@ -1860,7 +1996,7 @@ input { font: inherit; color: inherit; }
   touch-action: manipulation;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.note-item__delete:hover { color: var(--text); background: rgba(255, 255, 255, 0.85); }
+.note-item__delete:hover { color: var(--text); background: rgb(var(--white-rgb) / 0.85); }
 .note-item__delete.is-armed {
   background: var(--button);
   color: var(--on-button);
@@ -1877,7 +2013,7 @@ input { font: inherit; color: inherit; }
   overflow: visible;
 }
 .memory::backdrop {
-  background: rgba(91, 63, 99, 0.22);
+  background: rgb(var(--plum-rgb) / 0.22);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   animation: memory-backdrop-in 0.35s ease;
@@ -1890,11 +2026,11 @@ input { font: inherit; color: inherit; }
   border-radius: 8px;
   /* cream paper with a soft crease where it was folded */
   background:
-    linear-gradient(to bottom, transparent calc(50% - 1px), rgba(91, 63, 99, 0.08) 50%, transparent calc(50% + 1px)),
+    linear-gradient(to bottom, transparent calc(50% - 1px), rgb(var(--plum-rgb) / 0.08) 50%, transparent calc(50% + 1px)),
     var(--paper);
   box-shadow:
-    0 1px 2px rgba(91, 63, 99, 0.08),
-    0 16px 40px -12px rgba(91, 63, 99, 0.4);
+    0 1px 2px rgb(var(--plum-rgb) / 0.08),
+    0 16px 40px -12px rgb(var(--plum-rgb) / 0.4);
   transform-origin: 50% 0;
 }
 /* Opens by unfolding from the top */
@@ -2077,7 +2213,7 @@ input { font: inherit; color: inherit; }
 }
 .flower-ring__track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.5);
+  stroke: rgb(var(--white-rgb) / 0.5);
   stroke-width: 0.8;
 }
 .flower-ring__progress {
@@ -2182,7 +2318,7 @@ input { font: inherit; color: inherit; }
   position: fixed;
   inset: 0;
   z-index: 3;                   /* over the sky, under the page content */
-  background: rgba(38, 24, 48, 0.25);
+  background: var(--dim);
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.4s ease;
@@ -2290,8 +2426,8 @@ input { font: inherit; color: inherit; }
   column-gap: 12px;
   padding: 12px 18px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: inset 0 0 0 2px rgba(91, 63, 99, 0.12);
+  background: rgb(var(--white-rgb) / 0.6);
+  box-shadow: inset 0 0 0 2px rgb(var(--plum-rgb) / 0.12);
   transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 .pattern__name {
@@ -2319,7 +2455,7 @@ input { font: inherit; color: inherit; }
 }
 .pattern__input:checked + .pattern__body .pattern__desc,
 .pattern__input:checked + .pattern__body .pattern__beats {
-  color: color-mix(in srgb, var(--on-button) 85%, transparent);
+  color: var(--on-button);
 }
 .pattern__input:focus-visible + .pattern__body {
   outline: 3px solid var(--text);
@@ -2351,8 +2487,8 @@ input { font: inherit; color: inherit; }
   min-height: 48px;
   padding: 8px 6px;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: inset 0 0 0 2px rgba(91, 63, 99, 0.12);
+  background: rgb(var(--white-rgb) / 0.6);
+  box-shadow: inset 0 0 0 2px rgb(var(--plum-rgb) / 0.12);
   color: var(--text-soft);
   font-weight: 700;
   font-size: 16px;
@@ -2406,13 +2542,6 @@ input { font: inherit; color: inherit; }
    Mood colors are the same in every sky, and none of them reads as
    "bad": low moods are soft cool colors, not grey or red.
    ===================================================================== */
-.page-me {
-  --mood-very-low: #C3CBEF;   /* soft blue-lavender */
-  --mood-low:      #D4C4F1;   /* lavender */
-  --mood-okay:     #F6E0A0;   /* butter */
-  --mood-good:     #F9C39C;   /* peach */
-  --mood-great:    #F4A6BE;   /* pink */
-}
 [data-mood="very-low"] { --mood: var(--mood-very-low); }
 [data-mood="low"]      { --mood: var(--mood-low); }
 [data-mood="okay"]     { --mood: var(--mood-okay); }
@@ -2428,13 +2557,9 @@ input { font: inherit; color: inherit; }
   height: 250px;
   margin-bottom: 20px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  border: var(--glass-border);
   border-radius: var(--radius-card);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(91, 63, 99, 0.06),
-    0 8px 24px -8px rgba(91, 63, 99, 0.18),
-    0 24px 48px -24px rgba(91, 63, 99, 0.22);
+  box-shadow: var(--shadow-card);
 }
 .profile__sky {
   position: absolute;
@@ -2522,10 +2647,10 @@ input { font: inherit; color: inherit; }
   background: radial-gradient(circle at 34% 28%,
     color-mix(in srgb, var(--mood) 40%, #FFFFFF) 0%,
     var(--mood) 62%,
-    color-mix(in srgb, var(--mood) 82%, #5B3F63) 100%);
+    color-mix(in srgb, var(--mood) 82%, var(--text)) 100%);
   box-shadow:
-    inset 0 -4px 8px rgba(91, 63, 99, 0.1),
-    0 6px 14px -8px rgba(91, 63, 99, 0.55);
+    inset 0 -4px 8px rgb(var(--plum-rgb) / 0.1),
+    0 6px 14px -8px rgb(var(--plum-rgb) / 0.55);
   transition: transform 0.28s var(--ease-soft), box-shadow 0.28s ease;
 }
 .mood__face {
@@ -2533,7 +2658,7 @@ input { font: inherit; color: inherit; }
   width: 100%;
   height: 100%;
 }
-.face__cheek { fill: rgba(244, 143, 168, 0.42); }
+.face__cheek { fill: var(--cheek); }
 .face__eye   { fill: var(--text); }
 .face__line {
   fill: none;
@@ -2557,7 +2682,7 @@ input { font: inherit; color: inherit; }
 .mood__input:checked ~ .mood__blob {
   transform: scale(1.14);
   box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 3px rgb(var(--white-rgb) / 0.95),
     0 0 0 6px color-mix(in srgb, var(--mood) 70%, var(--button)),
     0 0 22px 8px var(--mood);
 }
@@ -2577,8 +2702,8 @@ input { font: inherit; color: inherit; }
   margin-top: 20px;
   padding: 14px 18px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 8px 20px -12px rgba(91, 63, 99, 0.45);
+  background: rgb(var(--white-rgb) / 0.78);
+  box-shadow: 0 8px 20px -12px rgb(var(--plum-rgb) / 0.45);
   color: var(--text);
   font-family: var(--font-serif);
   font-style: italic;
@@ -2629,30 +2754,33 @@ input { font: inherit; color: inherit; }
 
 .garden__stem {
   fill: none;
-  stroke: #7FAE8A;
+  stroke: var(--stem);
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-dasharray: 1;          /* pathLength=1, so it can "draw" itself up */
 }
-.garden__leaf { fill: #9CC8A5; }
+.garden__leaf {
+  fill: var(--leaf);
+  transform-origin: 0% 100%;
+}
 .garden__petal {
   fill: var(--mood);
-  stroke: color-mix(in srgb, var(--mood) 72%, #5B3F63);
+  stroke: color-mix(in srgb, var(--mood) 72%, var(--text));
   stroke-width: 0.6;
 }
 .garden__center {
   fill: var(--sun-edge);
-  stroke: rgba(255, 255, 255, 0.8);
+  stroke: rgb(var(--white-rgb) / 0.8);
   stroke-width: 1;
 }
 .garden__mound {
   fill: none;
-  stroke: rgba(91, 63, 99, 0.22);
+  stroke: rgb(var(--plum-rgb) / 0.22);
   stroke-width: 1.5;
   stroke-linecap: round;
 }
-.garden__seed { fill: #B98A62; }
-.garden__seed-shine { fill: rgba(255, 255, 255, 0.75); }
+.garden__seed { fill: var(--seed); }
+.garden__seed-shine { fill: rgb(var(--white-rgb) / 0.75); }
 
 .garden__bloom,
 .garden__leaf,
@@ -2660,7 +2788,6 @@ input { font: inherit; color: inherit; }
   transform-box: fill-box;
 }
 .garden__bloom { transform-origin: center; }
-.garden__leaf  { transform-origin: 0% 100%; }
 
 /* Growing up: the stem draws itself, then the leaf and bloom open.
    Each plant waits its turn (--d), left to right. */
@@ -2720,15 +2847,12 @@ input { font: inherit; color: inherit; }
   align-items: center;
   gap: 2px;
   padding: 16px 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 22px;
+  border: var(--glass-border);
+  border-radius: var(--radius-soft);
   background: var(--card);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(91, 63, 99, 0.06),
-    0 8px 20px -10px rgba(91, 63, 99, 0.25);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-tile);
   text-align: center;
 }
 /* Hand-drawn feel: soft fill, round strokes, a little tilt */
@@ -2785,20 +2909,20 @@ input { font: inherit; color: inherit; }
   justify-content: space-between;
   min-height: 170px;
   padding: 24px 20px 18px;
-  border-radius: 22px;
+  border-radius: var(--radius-soft);
   background: var(--pastel);
   box-shadow:
-    0 1px 2px rgba(91, 63, 99, 0.08),
-    0 12px 24px -14px rgba(91, 63, 99, 0.45);
+    0 1px 2px rgb(var(--plum-rgb) / 0.08),
+    0 12px 24px -14px rgb(var(--plum-rgb) / 0.45);
   transform: rotate(var(--tilt));
   scroll-snap-align: center;
 }
 .fav-card:nth-child(even) { --tilt: 1.2deg; }
-.fav-card--0 { --pastel: #FDE2E7; }  /* pink */
-.fav-card--1 { --pastel: #FFF1C9; }  /* butter */
-.fav-card--2 { --pastel: #DDF0E2; }  /* mint */
-.fav-card--3 { --pastel: #E7E0F8; }  /* lavender */
-.fav-card--4 { --pastel: #FFE3D1; }  /* peach */
+.fav-card--0 { --pastel: var(--pastel-pink); }  /* pink */
+.fav-card--1 { --pastel: var(--pastel-butter); }  /* butter */
+.fav-card--2 { --pastel: var(--pastel-mint); }  /* mint */
+.fav-card--3 { --pastel: var(--pastel-lavender); }  /* lavender */
+.fav-card--4 { --pastel: var(--pastel-peach); }  /* peach */
 
 .fav-card__text {
   padding-right: 34px;             /* clear of the remove button */
@@ -2827,12 +2951,12 @@ input { font: inherit; color: inherit; }
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-width: 44px;
-  height: 44px;
-  padding: 0 10px;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 12px;
   border: 0;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.65);
+  background: rgb(var(--white-rgb) / 0.65);
   color: var(--text-soft);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -2841,7 +2965,7 @@ input { font: inherit; color: inherit; }
   touch-action: manipulation;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.fav-card__remove:hover { background: rgba(255, 255, 255, 0.9); color: var(--text); }
+.fav-card__remove:hover { background: rgb(var(--white-rgb) / 0.9); color: var(--text); }
 .fav-card__remove svg {
   width: 18px;
   height: 18px;
@@ -2858,7 +2982,7 @@ input { font: inherit; color: inherit; }
 
 .favorites__empty {
   padding: 22px 20px;
-  border-radius: 22px;
+  border-radius: var(--radius-soft);
   background: var(--card);
   color: var(--text-soft);
   font-family: var(--font-serif);
@@ -2883,7 +3007,7 @@ input { font: inherit; color: inherit; }
   left: 66px;
   right: 0;
   height: 1px;
-  background: rgba(91, 63, 99, 0.1);
+  background: rgb(var(--plum-rgb) / 0.1);
 }
 
 .settings__row {
@@ -2905,7 +3029,7 @@ input { font: inherit; color: inherit; }
   cursor: pointer;
   touch-action: manipulation;
 }
-.settings__row:hover { background: rgba(255, 255, 255, 0.35); }
+.settings__row:hover { background: rgb(var(--white-rgb) / 0.35); }
 .settings__row:focus-visible { outline-offset: -3px; border-radius: 16px; }
 
 .settings__icon {
@@ -2917,9 +3041,91 @@ input { font: inherit; color: inherit; }
   border-radius: 50%;
   color: #FFFFFF;
 }
-.settings__icon--name  { background: #EE9BB4; }
-.settings__icon--sky   { background: #8EC0DE; }
-.settings__icon--sound { background: #EDBB5F; }
+.settings__icon--name  { background: var(--icon-pink); }
+.settings__icon--sky   { background: var(--icon-blue); }
+.settings__icon--sound { background: var(--icon-gold); }
+.settings__icon--reminder { background: var(--icon-lilac); }
+.settings__icon--share { background: var(--icon-peach); }
+
+/* Share: a QR code on paper, and a small note about privacy */
+.share {
+  padding: 4px 18px 20px;
+  text-align: center;
+}
+.share__qr-wrap { margin: 0; }
+.share__qr-wrap[hidden] { display: none; }
+.share__qr {
+  width: min(168px, 100%);
+  margin: 4px auto 0;
+  padding: 8px;
+  border-radius: var(--radius-input);
+  background: var(--paper);
+  box-shadow: var(--shadow-soft);
+}
+.share__qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.share__qr-dots { fill: var(--text); }
+.share__caption {
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
+.share__note {
+  margin-top: 12px;
+  color: var(--text-soft);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* Daily reminder: a time picker at the end of its row */
+.settings__time {
+  flex: none;
+  min-height: 48px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(var(--white-rgb) / 0.75);
+  box-shadow: inset 0 0 0 2px rgb(var(--plum-rgb) / 0.12);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.settings__time:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+.settings__time::-webkit-calendar-picker-indicator { opacity: 0.55; cursor: pointer; }
+
+/* "Add reminder to my calendar" and its small note */
+.reminder { padding: 4px 18px 18px; }
+.reminder__button {
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 18px;
+  font-size: 16px;
+}
+.reminder__button svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.reminder__note {
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 16px;
+  line-height: 1.45;
+}
 .settings__icon svg {
   width: 18px;
   height: 18px;
@@ -2948,7 +3154,7 @@ input { font: inherit; color: inherit; }
   width: 52px;
   height: 32px;
   border-radius: var(--radius-pill);
-  background: rgba(91, 63, 99, 0.18);
+  background: rgb(var(--plum-rgb) / 0.18);
   transition: background-color 0.2s ease;
 }
 .switch__knob {
@@ -2959,7 +3165,7 @@ input { font: inherit; color: inherit; }
   height: 26px;
   border-radius: 50%;
   background: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(91, 63, 99, 0.3);
+  box-shadow: 0 2px 6px rgb(var(--plum-rgb) / 0.3);
   transition: transform 0.22s var(--ease-soft);
 }
 [aria-checked="true"] .switch { background: var(--button); }
@@ -2976,7 +3182,7 @@ input { font: inherit; color: inherit; }
   width: 100%;
   min-height: 54px;
   border: 0;
-  border-radius: 22px;
+  border-radius: var(--radius-soft);
   background: none;
   color: var(--button);
   font-family: var(--font-sans);
@@ -2985,7 +3191,7 @@ input { font: inherit; color: inherit; }
   cursor: pointer;
   touch-action: manipulation;
 }
-.reset__open:hover { background: rgba(255, 255, 255, 0.35); }
+.reset__open:hover { background: rgb(var(--white-rgb) / 0.35); }
 .reset__open[hidden] { display: none; }
 
 .reset__confirm { padding: 14px 12px 10px; }
@@ -3038,14 +3244,14 @@ input { font: inherit; color: inherit; }
   stroke-width: 1;
 }
 .support__hand {
-  fill: #FBE3D3;
-  stroke: rgba(91, 63, 99, 0.4);
+  fill: var(--hand);
+  stroke: rgb(var(--plum-rgb) / 0.4);
   stroke-width: 1.4;
   stroke-linejoin: round;
 }
 .support__cuff {
   fill: none;
-  stroke: rgba(91, 63, 99, 0.4);
+  stroke: rgb(var(--plum-rgb) / 0.4);
   stroke-width: 1.4;
   stroke-linecap: round;
 }
@@ -3089,12 +3295,6 @@ input { font: inherit; color: inherit; }
    Uses the Today page layout (body has .page-home too), the page
    header, .card, .pill, the buttons, and the toast.
    ===================================================================== */
-.letter-paper,
-.seal-fly__sheet {
-  --paper: #FFF8EA;
-  --paper-line: rgba(124, 98, 132, 0.13);
-}
-
 /* ---- Back to the Me page ---- */
 .back-link { margin: -6px 0 2px -12px; }
 .back-link .btn {
@@ -3115,12 +3315,10 @@ input { font: inherit; color: inherit; }
 .letter-paper {
   position: relative;
   padding: 22px 20px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-paper);
   background: var(--paper);
   color: var(--text);
-  box-shadow:
-    0 1px 2px rgba(91, 63, 99, 0.08),
-    0 12px 26px -12px rgba(91, 63, 99, 0.35);
+  box-shadow: var(--shadow-paper);
 }
 .letter-paper__hello {
   margin-bottom: 2px;
@@ -3152,7 +3350,7 @@ input { font: inherit; color: inherit; }
   color: var(--text);
 }
 .letter-paper__input::placeholder {
-  color: rgba(124, 98, 132, 0.6);
+  color: rgb(var(--soft-rgb) / 0.8);
   opacity: 1;
 }
 .letter-paper__input:focus { outline: none; }
@@ -3239,12 +3437,12 @@ input { font: inherit; color: inherit; }
   border-radius: 8px;
 }
 .envelope__back {
-  background: #EBD6B4;
-  box-shadow: 0 8px 18px -10px rgba(91, 63, 99, 0.5);
+  background: var(--envelope-back);
+  box-shadow: 0 8px 18px -10px rgb(var(--plum-rgb) / 0.5);
 }
 /* The front: everything but the top triangle, so the V of the back shows */
 .envelope__pocket {
-  background: linear-gradient(160deg, #F8EBD5, #F1DEC0);
+  background: linear-gradient(160deg, var(--envelope-front-1), var(--envelope-front-2));
   clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%);
 }
 .envelope__flap {
@@ -3254,7 +3452,7 @@ input { font: inherit; color: inherit; }
   right: 0;
   z-index: 1;
   height: 58%;
-  background: linear-gradient(180deg, #EAD0A7, #E2C497);
+  background: linear-gradient(180deg, var(--envelope-flap-1), var(--envelope-flap-2));
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   transform-origin: 50% 0;
   transition: transform 0.45s ease-in-out;
@@ -3275,10 +3473,10 @@ input { font: inherit; color: inherit; }
   background: radial-gradient(circle at 35% 30%,
     color-mix(in srgb, var(--button) 55%, #FFFFFF) 0%,
     var(--button) 55%,
-    color-mix(in srgb, var(--button) 70%, #3A1F33) 100%);
+    color-mix(in srgb, var(--button) 70%, rgb(var(--seal-dark-rgb))) 100%);
   box-shadow:
-    0 2px 4px rgba(58, 31, 51, 0.3),
-    inset 0 0 0 2px color-mix(in srgb, var(--button) 80%, #3A1F33);
+    0 2px 4px rgb(var(--seal-dark-rgb) / 0.3),
+    inset 0 0 0 2px color-mix(in srgb, var(--button) 80%, rgb(var(--seal-dark-rgb)));
   opacity: 0;
   transform: translate(-50%, -50%);
 }
@@ -3286,8 +3484,8 @@ input { font: inherit; color: inherit; }
 .envelope__seal svg {
   width: 56%;
   height: 56%;
-  fill: rgba(255, 255, 255, 0.4);
-  stroke: rgba(58, 31, 51, 0.25);
+  fill: rgb(var(--white-rgb) / 0.4);
+  stroke: rgb(var(--seal-dark-rgb) / 0.25);
   stroke-width: 0.8;
   stroke-linejoin: round;
 }
@@ -3323,14 +3521,12 @@ input { font: inherit; color: inherit; }
   gap: 16px;
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 22px;
+  border: var(--glass-border);
+  border-radius: var(--radius-soft);
   background: var(--card);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 8px 20px -12px rgba(91, 63, 99, 0.3);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-tile);
   color: var(--text);
   font: inherit;
   text-align: left;
@@ -3373,7 +3569,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
 
 .letters-empty {
   padding: 18px 20px;
-  border-radius: 22px;
+  border-radius: var(--radius-soft);
   background: var(--card);
   color: var(--text-soft);
   font-family: var(--font-serif);
@@ -3400,7 +3596,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   background:
     repeating-linear-gradient(to bottom, transparent 0 13px, var(--paper-line) 13px 14px),
     var(--paper);
-  box-shadow: 0 10px 24px -12px rgba(91, 63, 99, 0.4);
+  box-shadow: 0 10px 24px -12px rgb(var(--plum-rgb) / 0.4);
 }
 
 /* ---- Opening a letter ---- */
@@ -3415,7 +3611,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   overflow: visible;
 }
 .letter-open::backdrop {
-  background: rgba(91, 63, 99, 0.22);
+  background: rgb(var(--plum-rgb) / 0.22);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   animation: memory-backdrop-in 0.35s ease;
@@ -3509,7 +3705,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   color: var(--text);
   text-decoration: none;
 }
-.letters-link:hover { background: rgba(255, 251, 246, 0.85); }
+.letters-link:hover { background: rgb(var(--cream-rgb) / 0.85); }
 .letters-link__icon {
   flex: none;
   width: 72px;
@@ -3590,10 +3786,10 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgb(var(--white-rgb) / 0.6);
   box-shadow:
-    inset 0 0 0 2px rgba(91, 63, 99, 0.1),
-    0 6px 14px -8px rgba(91, 63, 99, 0.45);
+    inset 0 0 0 2px rgb(var(--plum-rgb) / 0.1),
+    0 6px 14px -8px rgb(var(--plum-rgb) / 0.45);
   transition: background-color 0.4s ease, box-shadow 0.4s ease, transform 0.2s var(--ease-soft);
 }
 .calm-tile__circle svg {
@@ -3619,7 +3815,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   background: var(--button);
   color: var(--on-button);
   box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 0 3px rgb(var(--white-rgb) / 0.9),
     0 0 18px 6px color-mix(in srgb, var(--button) 45%, transparent);
   animation: calm-glow 3s ease-in-out infinite alternate;
 }
@@ -3627,12 +3823,12 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
 @keyframes calm-glow {
   from {
     box-shadow:
-      0 0 0 3px rgba(255, 255, 255, 0.9),
+      0 0 0 3px rgb(var(--white-rgb) / 0.9),
       0 0 12px 3px color-mix(in srgb, var(--button) 35%, transparent);
   }
   to {
     box-shadow:
-      0 0 0 3px rgba(255, 255, 255, 0.9),
+      0 0 0 3px rgb(var(--white-rgb) / 0.9),
       0 0 24px 9px color-mix(in srgb, var(--button) 50%, transparent);
   }
 }
@@ -3674,7 +3870,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   border-radius: var(--radius-pill);
   background: linear-gradient(to right,
     var(--button) 0 var(--fill),
-    rgba(91, 63, 99, 0.15) var(--fill) 100%);
+    rgb(var(--plum-rgb) / 0.15) var(--fill) 100%);
 }
 .calm-volume__slider::-webkit-slider-thumb {
   width: 26px;
@@ -3686,7 +3882,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--button) 18%, transparent),
     0 0 14px 3px color-mix(in srgb, var(--button) 45%, transparent),
-    0 2px 5px rgba(91, 63, 99, 0.3);
+    0 2px 5px rgb(var(--plum-rgb) / 0.3);
   -webkit-appearance: none;
   appearance: none;
   transition: transform 0.15s ease;
@@ -3701,7 +3897,7 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
 .calm-volume__slider::-moz-range-track {
   height: 8px;
   border-radius: var(--radius-pill);
-  background: rgba(91, 63, 99, 0.15);
+  background: rgb(var(--plum-rgb) / 0.15);
 }
 .calm-volume__slider::-moz-range-progress {
   height: 8px;
@@ -3727,4 +3923,144 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   .calm-tile:hover .calm-tile__circle,
   .calm-tile:active .calm-tile__circle,
   .calm-volume__slider:active::-webkit-slider-thumb { transform: none; }
+}
+
+
+/* =====================================================================
+   30. Audit: things every page shares
+   ===================================================================== */
+
+/* Text that sits right on the sky (not on a card) can scroll over the
+   darker front hill, so it uses the deeper on-sky color everywhere */
+.section-title,
+.jar__count,
+.jar__empty,
+.breath__word,
+.breath__count,
+.breath__timer,
+.smile__message,
+.home-footer .btn--link,
+.joy-all__toggle .btn--link,
+.back-link .btn,
+.breath-sound .btn--link {
+  color: var(--text-on-sky);
+}
+.home-footer .btn--link,
+.joy-all__toggle .btn--link {
+  text-decoration-color: rgb(var(--plum-rgb) / 0.5);
+}
+
+/* Taps: no grey flash, and no outline flash on tap; keyboard focus rings stay */
+a, button, label, input, textarea, summary {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* While typing, the bottom nav steps aside so it never covers the field
+   (the page also asks the keyboard to resize it: interactive-widget) */
+.tabbar {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+body:has(:is(textarea, input:not([type="range"], [type="radio"], [type="checkbox"])):focus) .tabbar {
+  opacity: 0;
+  transform: translateY(110%);
+  pointer-events: none;
+}
+/* When the page scrolls a field into view, leave room below it */
+textarea,
+input {
+  scroll-margin: 24px 0 calc(var(--tabbar-height, 0px) + 24px);
+}
+
+/* Very narrow screens (or big zoom): tiles wrap instead of squeezing */
+@media (max-width: 359px) {
+  .tab { font-size: 14px; padding: 6px 2px; }
+  .tab__icon { width: 40px; padding: 3px 9px; }
+  .numbers { grid-template-columns: repeat(2, 1fr); }
+  .numbers__item:last-child { grid-column: 1 / -1; }
+  .calm-tiles { grid-template-columns: repeat(2, 1fr); row-gap: 14px; }
+  .breath-length__pills { grid-template-columns: 1fr; }
+  .moods { grid-template-columns: repeat(3, 1fr); row-gap: 12px; }
+  .letter-when__pills { grid-template-columns: 1fr; }
+  .card { padding-left: 16px; padding-right: 16px; }
+}
+
+/* Big text or zoom: rows wrap instead of pushing things off screen.
+   (At normal sizes there is room, so nothing wraps and nothing changes.) */
+.settings__row,
+.letter-item,
+.card.letters-link,
+.card.letter-arrived__button,
+.quote-actions { flex-wrap: wrap; }
+.settings__row > .switch,
+.settings__row > .settings__time { margin-left: auto; }
+.letter-item__text,
+.letters-link__text,
+.letter-arrived__text {
+  flex: 1 1 120px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.icon-btn { flex: none; }
+.fav-card { flex-basis: min(100%, max(78%, 240px)); }
+@media (max-width: 240px) {
+  .tabbar { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  .tab { padding: 6px 0; }
+  .tab__icon { width: 36px; padding: 3px 7px; }
+}
+
+/* Landscape phones: a shorter screen, so the sky's top spacing shrinks */
+@media (orientation: landscape) and (max-height: 500px) {
+  .home { padding-top: max(24px, calc(env(safe-area-inset-top) + 16px)); }
+  .stage { padding-top: max(16px, calc(env(safe-area-inset-top) + 12px)); justify-content: center; }
+  .breath { --S: min(60vh, 260px); }
+  .jar__stage { width: min(45vw, 240px); }
+}
+
+/* Reduced motion: a safety net for anything not switched off above.
+   The breathing flower keeps its slow opacity changes: they are the guide. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *:not(.flower__petal):not(.flower__sun),
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* Older phones without color-mix(): plain look-alikes. (A fallback line
+   written just before a color-mix() line would not help here: with var()
+   inside, the browser drops the whole value at render time instead.) */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .bokeh { background: radial-gradient(circle, var(--c) 0%, transparent 70%); }
+  .jar__glow { background: radial-gradient(circle, var(--sun-core) 0%, var(--sun-edge) 30%, transparent 66%); }
+  .note::before { background: rgb(var(--white-rgb) / 0.6); }
+  .letter__stamp { box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5px var(--button); }
+  .flower__petal { background: var(--c); }
+  .flower__sun { box-shadow: 0 0 18px 6px var(--sun-edge), 0 0 44px 12px var(--sun-core); }
+  .mood__blob { background: var(--mood); }
+  .mood__input:checked ~ .mood__blob {
+    box-shadow: 0 0 0 3px rgb(var(--white-rgb) / 0.95), 0 0 0 6px var(--button), 0 0 22px 8px var(--mood);
+  }
+  .garden__petal { stroke: var(--text); stroke-opacity: 0.3; }
+  .numbers__icon { fill: none; }
+  .support { background: var(--card); }
+  .support__sun-glow { fill: var(--sun-core); }
+  .support__sun { stroke: var(--button); }
+  .envelope__seal {
+    background: var(--button);
+    box-shadow: 0 2px 4px rgb(var(--seal-dark-rgb) / 0.3);
+  }
+  .card.letter-arrived__button { background: var(--card); }
+  .calm-tile.is-playing .calm-tile__circle {
+    box-shadow: 0 0 0 3px rgb(var(--white-rgb) / 0.9), 0 0 18px 6px rgb(var(--white-rgb) / 0.6);
+    animation: none;
+  }
+  .calm-volume__slider::-webkit-slider-thumb { box-shadow: 0 2px 5px rgb(var(--plum-rgb) / 0.3); }
+  .calm-volume__slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--text); }
+  .calm-volume__slider::-moz-range-thumb { box-shadow: 0 2px 5px rgb(var(--plum-rgb) / 0.3); }
+  .calm-volume__slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--text); }
 }

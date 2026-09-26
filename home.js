@@ -34,7 +34,7 @@
   ];
 
   // Burst particle colors: pink, peach, butter, lavender, mint (like the welcome petals)
-  const PETAL_COLORS = ['#F7B9C8', '#FFCBA4', '#FFE8A3', '#D6C6F2', '#BFE3CC'];
+  const PETAL_COLORS = window.LittleSunshine.PETAL_COLORS;
   const BURST_COUNT = 12;
 
   // Wallpaper export size (portrait phone screen)

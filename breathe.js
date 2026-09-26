@@ -41,7 +41,7 @@
 
   const IDLE_TEXT = 'Ready when you are.';
   const PARTICLE_COUNT = 16;
-  const PETAL_COLORS = ['#F7B9C8', '#FFCBA4', '#FFE8A3', '#D6C6F2', '#BFE3CC']; // like the welcome petals
+  const PETAL_COLORS = window.LittleSunshine.PETAL_COLORS; // like the welcome petals
   const SUN_RISE_DONE = 0.16; // the sun peeks over the hills when you finish
 
   const root = document.documentElement;

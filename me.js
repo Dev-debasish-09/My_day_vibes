@@ -16,8 +16,8 @@
 
   const {
     loadProfile, applySky, showToast, renderBottomNav, todayKey,
-    loadSoundOn, saveSoundOn, clearAllData,
-  } = window.LittleSunshine;
+    loadSoundOn, saveSoundOn, clearAllData, SITE_URL,
+  } = window.LittleSunshine;   // SITE_URL: the website's address, set in shared.js
 
   /* -------------------------------------------------------------------
      Settings
@@ -27,6 +27,16 @@
   const KINDNESS_KEY = 'littleSunshine:kindness';   // written by home.js
   const JOYS_KEY = 'littleSunshine:joys';           // written by joy.js
   const BREATHS_KEY = 'littleSunshine:breaths';     // written by breathe.js
+  const REMINDER_KEY = 'littleSunshine:reminderTime'; // "08:00"
+
+  const SHARE_TEXT = 'I made a little place that makes my days lighter. Try it:';
+
+  const REMINDER = {
+    title: 'Your little sunshine is waiting ☀️',
+    minutes: 5,
+    defaultTime: '08:00',
+    fileName: 'little-sunshine-reminder.ics',
+  };
 
   // Low moods get comfort, never forced cheer.
   // In the garden, a better mood means more petals and a taller stem.
@@ -104,6 +114,15 @@
       : 0;
   }
 
+  function loadReminderTime() {
+    try {
+      const t = localStorage.getItem(REMINDER_KEY);
+      return /^([01]\d|2[0-3]):[0-5]\d$/.test(t) ? t : REMINDER.defaultTime;
+    } catch (err) {
+      return REMINDER.defaultTime;
+    }
+  }
+
   function countBreaths() {
     const n = Number(readJson(BREATHS_KEY));
     return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
@@ -150,6 +169,157 @@
     el.classList.add(className);
   }
 
+  /* -------------------------------------------------------------------
+     Calendar reminder (.ics). Browsers can't reliably schedule
+     notifications without a server, so the phone's calendar does it:
+     a 5-minute event every day at the chosen time, with an alert.
+     ------------------------------------------------------------------- */
+  function siteUrl() {
+    return SITE_URL || (window.location.origin + '/');
+  }
+
+  // Text values in .ics escape \ ; , and line breaks
+  function icsText(value) {
+    return String(value)
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+      .replace(/\r?\n/g, '\\n');
+  }
+
+  // .ics lines may be at most 75 bytes; longer ones continue on the next
+  // line after a space (never splitting a character like the sun emoji)
+  function icsFold(line) {
+    const encoder = new TextEncoder();
+    const parts = [];
+    let current = '';
+    let bytes = 0;
+    for (const ch of line) {
+      const size = encoder.encode(ch).length;
+      const limit = parts.length ? 74 : 75; // continuation lines start with a space
+      if (bytes + size > limit) {
+        parts.push(current);
+        current = '';
+        bytes = 0;
+      }
+      current += ch;
+      bytes += size;
+    }
+    parts.push(current);
+    return parts.join('\r\n ');
+  }
+
+  // 20260927T080000 (local "floating" time: 8:00 stays 8:00 wherever you are)
+  function icsLocal(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return date.getFullYear() + pad(date.getMonth() + 1) + pad(date.getDate()) +
+      'T' + pad(date.getHours()) + pad(date.getMinutes()) + '00';
+  }
+
+  // 20260926T101500Z (UTC, for the file's own timestamp)
+  function icsUtc(date) {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  }
+
+  function buildReminderIcs(time) {
+    const [hours, minutes] = time.split(':').map(Number);
+    const now = new Date();
+    // The first one: today if the time is still ahead, otherwise tomorrow
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+    if (start <= now) start.setDate(start.getDate() + 1);
+
+    const url = siteUrl();
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Little Sunshine//Daily reminder//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + '@little-sunshine',
+      'DTSTAMP:' + icsUtc(now),
+      'DTSTART:' + icsLocal(start),
+      'DURATION:PT' + REMINDER.minutes + 'M',
+      'RRULE:FREQ=DAILY',
+      'SUMMARY:' + icsText(REMINDER.title),
+      'DESCRIPTION:' + icsText('A little moment for you, today. Open Little Sunshine: ' + url),
+      'URL:' + url,
+      'TRANSP:TRANSPARENT', // shows as free time, it never blocks your day
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:' + icsText(REMINDER.title),
+      'TRIGGER;RELATED=START:PT0M', // the alert rings at the event time
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ];
+    return lines.map(icsFold).join('\r\n') + '\r\n';
+  }
+
+  function downloadFile(text, fileName, type) {
+    const blob = new Blob([text], { type: type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* -------------------------------------------------------------------
+     Sharing: the Web Share sheet where there is one, otherwise the
+     link is copied. The QR code is made here too (lib/qrcode.js).
+     ------------------------------------------------------------------- */
+  // Copy text; navigator.clipboard needs https or localhost, so fall back
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (err) { /* try the fallback below */ }
+    try {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      const ok = document.execCommand('copy');
+      area.remove();
+      return ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // The QR code as an SVG: one path of little squares, with a quiet border
+  function qrSvg(text) {
+    const qr = window.qrcode(0, 'M'); // 0 = smallest size that fits; M = medium error correction
+    qr.addData(text);
+    qr.make();
+    const count = qr.getModuleCount();
+    const border = 2;
+    let d = '';
+    for (let row = 0; row < count; row++) {
+      for (let col = 0; col < count; col++) {
+        if (qr.isDark(row, col)) d += 'M' + (col + border) + ' ' + (row + border) + 'h1v1h-1z';
+      }
+    }
+    const size = count + border * 2;
+    const svg = svgEl('svg', {
+      viewBox: `0 0 ${size} ${size}`,
+      role: 'img',
+      'aria-label': 'QR code for ' + text,
+      'shape-rendering': 'crispEdges',
+    });
+    svg.appendChild(svgEl('path', { class: 'share__qr-dots', d: d }));
+    return svg;
+  }
+
   function svgEl(name, attrs) {
     const el = document.createElementNS(SVG_NS, name);
     Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]));
@@ -190,6 +360,11 @@
       resetConfirm: $('reset-confirm'),
       resetCancel: $('reset-cancel'),
       resetYes: $('reset-yes'),
+      reminderTime: $('reminder-time'),
+      reminderAdd: $('reminder-add'),
+      share: $('share-button'),
+      qrWrap: $('share-qr-wrap'),
+      qr: $('share-qr'),
     };
 
 
@@ -400,6 +575,53 @@
     }
 
 
+    /* ---------------- Settings: daily reminder ---------------- */
+    function saveReminderTime() {
+      const t = els.reminderTime.value;
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) return; // cleared or half typed: keep the last good one
+      try {
+        localStorage.setItem(REMINDER_KEY, t);
+      } catch (err) { /* it just won't be remembered */ }
+    }
+
+    function addReminder() {
+      saveReminderTime();
+      const time = loadReminderTime();
+      els.reminderTime.value = time;
+      downloadFile(buildReminderIcs(time), REMINDER.fileName, 'text/calendar;charset=utf-8');
+      showToast('Your reminder is ready. Open it to add it to your calendar.');
+    }
+
+
+    /* ---------------- Settings: share Little Sunshine ---------------- */
+    async function shareApp() {
+      const url = siteUrl();
+      if (typeof navigator.share === 'function') {
+        try {
+          await navigator.share({ title: 'Little Sunshine', text: SHARE_TEXT, url: url });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return; // the share sheet was closed
+          // Anything else: fall through and copy instead
+        }
+      }
+      const ok = await copyText(url);
+      showToast(ok ? 'Link copied.' : "Couldn't copy the link, sorry.");
+    }
+
+    function showQr() {
+      if (typeof window.qrcode !== 'function') {
+        els.qrWrap.hidden = true; // the QR library didn't load: just the share button
+        return;
+      }
+      try {
+        els.qr.replaceChildren(qrSvg(siteUrl()));
+      } catch (err) {
+        els.qrWrap.hidden = true;
+      }
+    }
+
+
     /* ---------------- Settings: reset everything ---------------- */
     function setResetOpen(open) {
       els.resetConfirm.hidden = !open;
@@ -428,9 +650,14 @@
     renderNumbers();
     renderFavorites();
     showSound(loadSoundOn());
+    els.reminderTime.value = loadReminderTime();
+    showQr();
 
     els.moods.addEventListener('change', onMoodChange);
     els.sound.addEventListener('click', toggleSound);
+    els.reminderTime.addEventListener('change', saveReminderTime);
+    els.reminderAdd.addEventListener('click', addReminder);
+    els.share.addEventListener('click', shareApp);
     els.resetOpen.addEventListener('click', () => setResetOpen(true));
     els.resetCancel.addEventListener('click', () => setResetOpen(false));
     els.resetYes.addEventListener('click', resetEverything);

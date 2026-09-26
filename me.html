@@ -9,19 +9,26 @@
 <html lang="en" data-sky="peach">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <!-- Light only: a phone in dark mode must not recolor the sky -->
+  <meta name="color-scheme" content="light">
   <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
   <meta name="theme-color" content="#FFD8BE">
   <meta name="description" content="Your little corner of Little Sunshine.">
   <title>Me · Little Sunshine</title>
 
-  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+  <!-- Icons and the app manifest (installable, works offline) -->
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Sunshine">
 
-  <!-- Fonts: Fraunces for headings and the name, Nunito for everything else -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+  <!-- Fonts are saved with the app (see @font-face in styles.css), so they work offline.
+       Preloading the two used first avoids a visible font swap. -->
+  <link rel="preload" href="fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fraunces-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="styles.css">
 
@@ -29,6 +36,8 @@
        profile, and me.js applies the saved sky before the first paint. -->
   <script src="shared.js"></script>
   <script src="letters-shared.js"></script>
+  <!-- QR codes, made on the phone (MIT license, saved with the app so it works offline) -->
+  <script src="lib/qrcode.js"></script>
   <script src="me.js"></script>
 </head>
 <!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
@@ -274,6 +283,43 @@
               <span class="settings__label">Sounds</span>
               <span class="switch" aria-hidden="true"><span class="switch__knob"></span></span>
             </button>
+          </li>
+          <li>
+            <!-- Daily reminder: the whole row is the label, so tapping it opens the time picker -->
+            <label class="settings__row" for="reminder-time">
+              <span class="settings__icon settings__icon--reminder" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.5H5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+              </span>
+              <span class="settings__label">Daily reminder</span>
+              <input class="settings__time" type="time" id="reminder-time" value="08:00" step="300">
+            </label>
+          </li>
+          <li class="reminder">
+            <button class="btn btn--soft reminder__button" type="button" id="reminder-add" aria-describedby="reminder-note">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="5.5" width="16" height="14.5" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M12 13v4M10 15h4"/></svg>
+              Add reminder to my calendar
+            </button>
+            <p class="reminder__note" id="reminder-note">Opens in your phone's calendar. Tap Add to get a gentle reminder every day.</p>
+          </li>
+          <li>
+            <!-- Web Share where the phone has it; otherwise copies the link -->
+            <button class="settings__row" type="button" id="share-button">
+              <span class="settings__icon settings__icon--share" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M12 14.5V4M8 7.5l4-4 4 4"/><path d="M7.5 10.5h-1a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg>
+              </span>
+              <span class="settings__label">Share Little Sunshine</span>
+              <span class="settings__chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 6l6 6-6 6"/></svg>
+              </span>
+            </button>
+          </li>
+          <li class="share">
+            <!-- A QR code for the link, so someone next to you can scan it (drawn by me.js) -->
+            <figure class="share__qr-wrap" id="share-qr-wrap">
+              <div class="share__qr" id="share-qr"></div>
+              <figcaption class="share__caption">Or let someone scan this</figcaption>
+            </figure>
+            <p class="share__note">Everyone gets their own private space. Your name, moods, and joys stay only on your phone.</p>
           </li>
         </ul>
 

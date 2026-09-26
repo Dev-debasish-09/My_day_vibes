@@ -1,7 +1,8 @@
 /* =====================================================================
    Little Sunshine: shared.js
    The bits every page needs: the saved profile, sky themes, the toast,
-   the bottom navigation, the floating light in the sky, and haptics.
+   the bottom navigation, the floating light in the sky, haptics, and
+   offline support (it registers service-worker.js and offers updates).
    Exposed as window.LittleSunshine.
 
    Load it in <head> without defer, before the page's own script. The
@@ -12,6 +13,13 @@
   'use strict';
 
   /* -------------------------------------------------------------------
+     The website's address: used by the calendar reminder and "Share
+     Little Sunshine" (Me page). If the site moves, change it here, and
+     also og:url and og:image in index.html (link previews can't read JS).
+     ------------------------------------------------------------------- */
+  const SITE_URL = 'https://my-day-vibes.vercel.app/';
+
+  /* -------------------------------------------------------------------
      Settings
      ------------------------------------------------------------------- */
   const KEY_PREFIX = 'littleSunshine:';            // every key this app saves starts with this
@@ -19,6 +27,9 @@
   const LEGACY_PROFILE_KEY = 'littleSunshine:v1'; // before shared.js; moved over on first read
   const SOUND_KEY = 'littleSunshine:sound';       // "on" or "off" (off by default)
   const MAX_NAME = 24;
+
+  // Falling petals and bursts: pink, peach, butter, lavender, mint
+  const PETAL_COLORS = ['#F7B9C8', '#FFCBA4', '#FFE8A3', '#D6C6F2', '#BFE3CC'];
 
   // Order here = order of the sky tiles on the welcome page.
   // statusBar is used for <meta name="theme-color"> (it's the sky's top color).
@@ -205,6 +216,7 @@
      role=status announces it politely.
      ------------------------------------------------------------------- */
   let toastTimer = 0;
+  let pendingAction = null; // a tappable toast waiting to come back (the update offer)
 
   function getToast() {
     let toast = document.getElementById('toast');
@@ -219,13 +231,38 @@
     return toast;
   }
 
-  function showToast(message) {
+  // showToast(message) shows a note for a few seconds.
+  // showToast(message, { onTap }) shows a button that stays until tapped.
+  function showToast(message, options) {
     const toast = getToast();
     if (!toast) return;
+    const onTap = options && options.onTap;
+    clearTimeout(toastTimer);
+
+    if (onTap) {
+      pendingAction = { message: message, onTap: onTap };
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'toast__action';
+      button.textContent = message;
+      button.addEventListener('click', () => {
+        pendingAction = null;
+        toast.classList.remove('is-shown', 'has-action');
+        onTap();
+      });
+      toast.replaceChildren(button);
+      toast.classList.add('is-shown', 'has-action');
+      return;
+    }
+
+    toast.classList.remove('has-action');
     toast.textContent = message;
     toast.classList.add('is-shown');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('is-shown'), 3200);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('is-shown');
+      // A waiting update offer comes back once the note is gone
+      if (pendingAction) setTimeout(() => showToast(pendingAction.message, pendingAction), 400);
+    }, 3200);
   }
 
 
@@ -314,6 +351,49 @@
 
 
   /* -------------------------------------------------------------------
+     Offline: register the service worker (service-worker.js saves every
+     file). When a new version has downloaded, offer it with a toast;
+     tapping it switches to the new version and reloads.
+     ------------------------------------------------------------------- */
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
+    let wantsRefresh = false;
+
+    function offerUpdate(worker) {
+      showToast('A fresh version is ready. Tap to refresh.', {
+        onTap: () => {
+          wantsRefresh = true;
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        },
+      });
+    }
+
+    // Reload only when the person asked for the new version
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (wantsRefresh) window.location.reload();
+    });
+
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('service-worker.js');
+        if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+        registration.addEventListener('updatefound', () => {
+          const worker = registration.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            // "installed" while a page is already controlled = an update, not the first visit
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) offerUpdate(worker);
+          });
+        });
+      } catch (err) {
+        // Offline support is a bonus; the app works without it
+        console.warn('Little Sunshine: offline support is off.', err);
+      }
+    });
+  }
+
+
+  /* -------------------------------------------------------------------
      Run immediately: no saved name means go back to the welcome page
      ------------------------------------------------------------------- */
   const isWelcomePage = /(^|\/)(index(\.html)?)?$/.test(window.location.pathname);
@@ -331,8 +411,12 @@
   // One listener for every page's haptic taps
   document.addEventListener('click', onTap);
 
+  registerServiceWorker();
+
 
   window.LittleSunshine = {
+    SITE_URL: SITE_URL,
+    PETAL_COLORS: PETAL_COLORS,
     SKIES: SKIES,
     MAX_NAME: MAX_NAME,
     cleanName: cleanName,

@@ -55,7 +55,7 @@
     'Oh, hello again. This place missed you a little.',
   ];
 
-  const PETAL_COLORS = ['#F7B9C8', '#FFCBA4', '#FFE8A3', '#D6C6F2', '#BFE3CC']; // pink, peach, butter, lavender, mint
+  const PETAL_COLORS = window.LittleSunshine.PETAL_COLORS; // pink, peach, butter, lavender, mint
 
   // How high the sun sits on each screen (0 = behind hills, 1 = high)
   const RISE = {
