@@ -82,7 +82,7 @@
   const HAPTIC_TAPS = [
     '.tab', '.btn--primary', '.icon-btn--heart', '.smile__sun',
     '.kindness__input', '.mood__input', '.pill__input', '.pattern__input', '#breath-stop',
-    '.letter-arrived__button', '.letter-item--ready',
+    '.letter-arrived__button', '.letter-item--ready', '.calm-tile',
   ].join(', ');
 
   const root = document.documentElement;

@@ -3545,3 +3545,186 @@ button.letter-item { cursor: pointer; touch-action: manipulation; }
   .letter-open::backdrop { animation: none; }
   .letter-open.is-reading .envelope { display: none; }
 }
+
+
+/* =====================================================================
+   29. Calm sounds (card on breathe.html, sounds made by calm-sounds.js)
+   Round tiles that glow while their sound plays, and one volume slider
+   with an accent-colored track and a round, glowing thumb.
+   ===================================================================== */
+.calm-card[hidden] { display: none; }
+.calm-card__lead {
+  margin-top: 4px;
+  color: var(--text-soft);
+  font-size: 16px;
+}
+
+/* ---- Tiles ---- */
+.calm-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 16px;
+}
+.calm-tile {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 4px;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  color: var(--text-soft);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.calm-tile:focus-visible { outline-offset: 2px; }
+
+.calm-tile__circle {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 0 0 2px rgba(91, 63, 99, 0.1),
+    0 6px 14px -8px rgba(91, 63, 99, 0.45);
+  transition: background-color 0.4s ease, box-shadow 0.4s ease, transform 0.2s var(--ease-soft);
+}
+.calm-tile__circle svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: color 0.4s ease;
+}
+.calm-tile__name {
+  font-size: 16px;
+  font-weight: 600;
+}
+.calm-tile:hover .calm-tile__circle { transform: translateY(-2px); }
+.calm-tile:active .calm-tile__circle { transform: scale(0.94); }
+
+/* Playing: filled with the accent, and a soft glow that breathes */
+.calm-tile.is-playing { color: var(--text); }
+.calm-tile.is-playing .calm-tile__circle {
+  background: var(--button);
+  color: var(--on-button);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 18px 6px color-mix(in srgb, var(--button) 45%, transparent);
+  animation: calm-glow 3s ease-in-out infinite alternate;
+}
+.calm-tile.is-playing .calm-tile__name { font-weight: 700; }
+@keyframes calm-glow {
+  from {
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.9),
+      0 0 12px 3px color-mix(in srgb, var(--button) 35%, transparent);
+  }
+  to {
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.9),
+      0 0 24px 9px color-mix(in srgb, var(--button) 50%, transparent);
+  }
+}
+
+/* ---- Volume ---- */
+.calm-volume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.calm-volume__icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--text-soft);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --fill (set by calm-sounds.js) colors the track up to the thumb */
+.calm-volume__slider {
+  --fill: 60%;
+  flex: 1;
+  min-width: 0;
+  height: 44px;                    /* a comfortable tap target */
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.calm-volume__slider:focus-visible { outline: none; }
+
+.calm-volume__slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(to right,
+    var(--button) 0 var(--fill),
+    rgba(91, 63, 99, 0.15) var(--fill) 100%);
+}
+.calm-volume__slider::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  margin-top: -9px;
+  border: 2px solid var(--button);
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--button) 18%, transparent),
+    0 0 14px 3px color-mix(in srgb, var(--button) 45%, transparent),
+    0 2px 5px rgba(91, 63, 99, 0.3);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 0.15s ease;
+}
+.calm-volume__slider:active::-webkit-slider-thumb { transform: scale(1.1); }
+.calm-volume__slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 3px var(--text),
+    0 0 14px 3px color-mix(in srgb, var(--button) 45%, transparent);
+}
+
+.calm-volume__slider::-moz-range-track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(91, 63, 99, 0.15);
+}
+.calm-volume__slider::-moz-range-progress {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--button);
+}
+.calm-volume__slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--button);
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--button) 18%, transparent),
+    0 0 14px 3px color-mix(in srgb, var(--button) 45%, transparent);
+}
+.calm-volume__slider:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--text), 0 0 14px 3px color-mix(in srgb, var(--button) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calm-tile.is-playing .calm-tile__circle { animation: none; }
+  .calm-tile:hover .calm-tile__circle,
+  .calm-tile:active .calm-tile__circle,
+  .calm-volume__slider:active::-webkit-slider-thumb { transform: none; }
+}
