@@ -28,6 +28,7 @@
   <!-- Loaded in <head> on purpose (no defer): shared.js checks for a saved
        profile, and me.js applies the saved sky before the first paint. -->
   <script src="shared.js"></script>
+  <script src="letters-shared.js"></script>
   <script src="me.js"></script>
 </head>
 <!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
@@ -218,6 +219,21 @@
         <h2 class="home-card__title section-title" id="favorites-title" tabindex="-1">Favorites</h2>
         <ul class="favorites" id="favorites"></ul>
         <p class="favorites__empty" id="favorites-empty" hidden>Tap the heart on a quote or poem to keep it here.</p>
+      </section>
+
+      <!-- ---------- Letters to future me (its own page) ----------
+           letters-shared.js fills in the envelope and the one-line summary -->
+      <section class="letters-section" aria-labelledby="letters-title">
+        <a class="card letters-link" href="letters.html">
+          <span class="letters-link__icon" data-letters-icon></span>
+          <span class="letters-link__text">
+            <span class="letters-link__title" id="letters-title">Letters to future me</span>
+            <span class="letters-link__summary" id="letters-summary">Write a letter to open later.</span>
+          </span>
+          <span class="settings__chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 6l6 6-6 6"/></svg>
+          </span>
+        </a>
       </section>
 
       <!-- ---------- Settings: like a phone settings list ---------- -->

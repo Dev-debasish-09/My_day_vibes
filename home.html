@@ -26,8 +26,10 @@
 
   <!-- Loaded in <head> on purpose (no defer): it checks for a saved profile and
        applies the saved sky before the first paint, so there is no color flash. -->
-  <!-- shared.js first (profile, sky, toast, nav), then art.js (generateArt), then home.js -->
+  <!-- shared.js first (profile, sky, toast, nav), then letters-shared.js (fills the
+       "letter has arrived" card), then art.js (generateArt), then home.js -->
   <script src="shared.js"></script>
+  <script src="letters-shared.js"></script>
   <script src="art.js"></script>
   <script src="home.js"></script>
 </head>
@@ -62,6 +64,10 @@
     </header>
 
     <main class="home-cards">
+      <!-- "A letter from past you has arrived." Filled by letters-shared.js,
+           only when a sealed letter's day has come -->
+      <section class="letter-arrived" id="letter-arrived" aria-label="Letters" hidden></section>
+
       <section class="card home-card quote-card" aria-labelledby="card-quote-title">
         <h2 class="home-card__title" id="card-quote-title">Quote of the day</h2>
 

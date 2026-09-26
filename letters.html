@@ -1,0 +1,142 @@
+<!doctype html>
+<!--
+  Little Sunshine: "Letters to future me" (opened from the Me page)
+  Same sky, sun, and hills as the other pages. Write a letter on cream
+  paper, choose when it may be opened, and seal it: it folds into an
+  envelope, gets a wax seal, and waits. When its day comes, it opens.
+  The fixed bottom navigation and the toast are added by shared.js.
+-->
+<html lang="en" data-sky="peach">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
+  <meta name="theme-color" content="#FFD8BE">
+  <meta name="description" content="Write now. Open it when the time comes.">
+  <title>Letters · Little Sunshine</title>
+
+  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+
+  <!-- Fonts: Fraunces for headings and letters, Nunito for everything else -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Loaded in <head> on purpose (no defer): shared.js checks for a saved
+       profile, and letters.js applies the saved sky before the first paint. -->
+  <script src="shared.js"></script>
+  <script src="letters-shared.js"></script>
+  <script src="letters.js"></script>
+</head>
+<!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
+<body class="page-home page-letters">
+
+  <!-- ============ The scene: sky, sun, and two rolling hills (same as index.html) ============ -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <div class="sun">
+      <div class="sun__glow"></div>
+      <div class="sun__core"></div>
+    </div>
+
+    <svg class="hill hill--back" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 70 C60 40 130 30 200 52 C270 74 330 40 400 48 L400 200 L0 200 Z"/>
+    </svg>
+    <svg class="hill hill--front" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C80 50 150 60 220 85 C290 110 350 70 400 60 L400 200 L0 200 Z"/>
+    </svg>
+  </div>
+
+  <!-- ============ Page content (scrolls over the fixed scene) ============ -->
+  <div class="home">
+
+    <nav class="back-link" aria-label="Back">
+      <a class="btn btn--link" href="me.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 6l-6 6 6 6"/></svg>
+        Me
+      </a>
+    </nav>
+
+    <header class="home-header">
+      <p class="page-eyebrow">For later</p>
+      <h1 class="page-title">Letters to future me</h1>
+      <p class="page-lead">Write now. Open it when the time comes.</p>
+    </header>
+
+    <main class="home-cards">
+
+      <!-- ---------- Write a letter ---------- -->
+      <section class="card home-card letter-write" aria-labelledby="write-title">
+        <h2 class="home-card__title" id="write-title">Write a letter</h2>
+
+        <form class="letter-form" id="letter-form" novalidate>
+          <!-- Cream paper with faint lines -->
+          <div class="letter-paper letter-paper--write" id="letter-paper">
+            <p class="letter-paper__hello" aria-hidden="true">Dear future me,</p>
+            <label class="visually-hidden" for="letter-input">Your letter to future you</label>
+            <textarea class="letter-paper__input" id="letter-input" rows="7" maxlength="2000"
+                      placeholder="Today I want to tell you…"
+                      aria-describedby="letter-count letter-hint"></textarea>
+          </div>
+
+          <div class="letter-form__meta">
+            <!-- Only shows a message when sealing with nothing written -->
+            <p class="joy-hint" id="letter-hint" aria-live="polite"></p>
+            <p class="joy-count" id="letter-count">0 / 2000</p>
+          </div>
+
+          <fieldset class="letter-when" id="letter-when">
+            <legend class="letter-when__legend">Open it in</legend>
+            <div class="letter-when__pills">
+              <label class="pill">
+                <input class="pill__input" type="radio" name="when" value="1w">
+                <span class="pill__label">1 week</span>
+              </label>
+              <label class="pill">
+                <input class="pill__input" type="radio" name="when" value="1m" checked>
+                <span class="pill__label">1 month</span>
+              </label>
+              <label class="pill">
+                <input class="pill__input" type="radio" name="when" value="3m">
+                <span class="pill__label">3 months</span>
+              </label>
+              <label class="pill">
+                <input class="pill__input" type="radio" name="when" value="6m">
+                <span class="pill__label">6 months</span>
+              </label>
+            </div>
+            <p class="letter-when__date" id="letter-when-date" aria-live="polite"></p>
+          </fieldset>
+
+          <button class="btn btn--primary" type="submit" id="letter-seal">Seal the letter</button>
+        </form>
+      </section>
+
+      <!-- ---------- Arrived, not opened yet ---------- -->
+      <section class="letters-list-section" id="ready-section" aria-labelledby="ready-title" hidden>
+        <h2 class="home-card__title section-title" id="ready-title">Ready to open</h2>
+        <ul class="letter-list" id="ready-list"></ul>
+      </section>
+
+      <!-- ---------- Sealed: they can't be read early ---------- -->
+      <section class="letters-list-section" aria-labelledby="waiting-title">
+        <h2 class="home-card__title section-title" id="waiting-title">Waiting</h2>
+        <ul class="letter-list" id="waiting-list"></ul>
+        <p class="letters-empty" id="waiting-empty">No letters waiting yet.</p>
+      </section>
+
+      <!-- ---------- Opened ---------- -->
+      <section class="letters-list-section" aria-labelledby="opened-title">
+        <h2 class="home-card__title section-title" id="opened-title">Opened</h2>
+        <ul class="opened-list" id="opened-list"></ul>
+        <p class="letters-empty" id="opened-empty">Letters you open will be kept here.</p>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
