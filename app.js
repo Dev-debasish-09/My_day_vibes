@@ -363,9 +363,14 @@
     getComputedStyle(root).getPropertyValue('--sun-rise');
 
     if (savedProfile && window.location.hash === '#edit') {
-      // Came from "Change name or sky" on the Today page: open the name screen, prefilled
+      // Came from "Change name or sky" (Today page) or "Change name" (Me page):
+      // open the name screen, prefilled
       history.replaceState(null, '', window.location.pathname);
       goToNameScreen();
+    } else if (savedProfile && window.location.hash === '#sky') {
+      // Came from "Change sky" on the Me page: straight to the sky picker
+      history.replaceState(null, '', window.location.pathname);
+      goToSkyScreen();
     } else if (savedProfile) {
       // Returning visitor: straight to the greeting
       goToGreeting({ returning: true, focus: false });

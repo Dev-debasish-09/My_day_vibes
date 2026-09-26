@@ -1318,6 +1318,7 @@ input { font: inherit; color: inherit; }
 .page-home .home-cards > :nth-child(3) { --enter-step: 2; }
 .page-home .home-cards > :nth-child(4) { --enter-step: 3; }
 .page-home .home-cards > :nth-child(5) { --enter-step: 4; }
+.page-home .home-cards > :nth-child(6) { --enter-step: 5; }
 .page-home .home-footer              { --enter-step: 5; }
 
 @keyframes home-enter {
@@ -1345,4 +1346,794 @@ input { font: inherit; color: inherit; }
   .page-home .home-cards > *,
   .page-home .home-footer,
   .page-home .sun__glow { animation: none; }
+}
+
+
+/* =====================================================================
+   25. Joy Jar page (joy.html)
+   Uses the Today page layout (body has .page-home too), .card,
+   .home-card__title, .btn--primary / --soft / --link and the toast.
+   ===================================================================== */
+.joy-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(40px, 11vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+}
+
+/* ---- The jar ---- */
+.jar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.jar__svg {
+  display: block;
+  width: min(72%, 260px);
+  height: auto;
+  overflow: visible;
+}
+
+.jar__shadow { fill: rgba(91, 63, 99, 0.16); }
+
+.jar__glass {
+  fill: rgba(255, 255, 255, 0.28);
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 3;
+  /* a faint darker edge so the glass reads on pale hills too */
+  filter: drop-shadow(0 0 1px rgba(91, 63, 99, 0.35)) drop-shadow(0 10px 18px rgba(91, 63, 99, 0.18));
+}
+
+.jar__shine {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.jar__shine--soft { stroke: rgba(255, 255, 255, 0.5); stroke-width: 4; }
+.jar__shine--dot  { stroke: rgba(255, 255, 255, 0.55); stroke-width: 4; }
+
+.jar__lid-top {
+  fill: rgba(255, 251, 246, 0.95);
+  stroke: rgba(91, 63, 99, 0.22);
+  stroke-width: 1.5;
+}
+.jar__lid-line {
+  fill: none;
+  stroke: rgba(91, 63, 99, 0.12);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.jar__ribbon { fill: var(--button); }
+
+.jar__empty {
+  margin-top: 10px;
+  color: var(--text-soft);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* ---- Paper stars ---- */
+.jar-star {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.jar-star__paper {
+  fill: var(--c);
+  stroke: var(--c);           /* same color, round joins: soft puffy points */
+  stroke-width: 3;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 0.6px rgba(91, 63, 99, 0.35));
+}
+.jar-star__folds {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
+/* Falls in from under the lid, spinning a little, and lands with a soft bounce */
+.jar-star.is-dropping {
+  animation: star-drop 0.95s cubic-bezier(0.45, 0, 0.7, 0.4) both;
+}
+@keyframes star-drop {
+  0%   { transform: translateY(var(--drop)) rotate(calc(var(--turn) * -3)); opacity: 0; }
+  12%  { opacity: 1; }
+  62%  { transform: translateY(0) rotate(0deg); animation-timing-function: ease-out; }
+  78%  { transform: translateY(-9px) rotate(6deg); animation-timing-function: ease-in; }
+  90%  { transform: translateY(0) rotate(0deg); animation-timing-function: ease-out; }
+  95%  { transform: translateY(-2px); animation-timing-function: ease-in; }
+  100% { transform: translateY(0); }
+}
+
+/* The lid gives a tiny hop as a star goes in */
+.jar__lid {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+.jar__lid.is-bumped { animation: lid-bump 0.5s var(--ease-soft); }
+@keyframes lid-bump {
+  0%   { transform: translateY(0) rotate(0deg); }
+  35%  { transform: translateY(-7px) rotate(-3deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* ---- Writing a joy ---- */
+.joy-form { margin-top: 16px; }
+
+/* 18px so iOS Safari does not zoom in when the field is focused */
+.joy-input {
+  display: block;
+  width: 100%;
+  min-height: 108px;
+  padding: 14px 16px;
+  resize: vertical;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid rgba(91, 63, 99, 0.16);
+  border-radius: var(--radius-input);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.joy-input::placeholder {
+  color: rgba(124, 98, 132, 0.62);
+  opacity: 1;
+}
+.joy-input:focus {
+  outline: none;
+  border-color: var(--button);
+  box-shadow: 0 0 0 4px rgba(91, 63, 99, 0.12);
+}
+.joy-input[aria-invalid="true"] { border-color: var(--button); }
+
+.joy-form__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  min-height: 24px;             /* reserves the line so the button doesn't jump */
+  margin: 8px 4px 12px;
+  font-size: 16px;
+}
+.joy-hint {
+  color: var(--button);
+  font-weight: 600;
+}
+.joy-count {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Pick a memory ---- */
+.joy-memories {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.joy-memories[hidden] { display: none; }
+
+.memory {
+  margin: 0;
+  text-align: center;
+  transition: opacity 0.24s ease;
+}
+.memory[hidden] { display: none; }
+.memory.is-fading { opacity: 0; }
+
+.memory__date {
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
+.memory__text {
+  margin: 10px 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.35rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* ---- See all ---- */
+.joy-all {
+  display: flex;
+  justify-content: center;
+  margin-top: -8px;
+}
+.joy-list-card[hidden] { display: none; }
+
+.joy-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+.joy-list__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(91, 63, 99, 0.1);
+}
+.joy-list__item:first-child { border-top: 0; }
+
+.joy-list__words {
+  flex: 1;
+  min-width: 0;
+}
+.joy-list__text {
+  font-size: 17px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.joy-list__date {
+  margin-top: 2px;
+  color: var(--text-soft);
+  font-size: 16px;
+}
+
+/* Quiet until armed: the first tap turns it into "Delete?" in the accent color */
+.joy-list__delete {
+  appearance: none;
+  flex: none;
+  min-width: 76px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-soft);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.joy-list__delete:hover { color: var(--text); background: rgba(255, 255, 255, 0.85); }
+.joy-list__delete.is-armed {
+  background: var(--button);
+  color: var(--on-button);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jar-star.is-dropping,
+  .jar__lid.is-bumped { animation: none; }
+  .memory { transition: none; }
+}
+
+
+/* =====================================================================
+   26. Breathe page (breathe.html)
+   Uses the Today page layout (body has .page-home too), .joy-title,
+   .card, .btn--primary / --soft / --link.
+   The circle's size follows data-phase on .breath; --phase-ms (set by
+   breathe.js) is how long each change takes: 4s in, 4s hold, 6s out.
+   ===================================================================== */
+.page-breathe {
+  overflow-x: clip;             /* the glow may reach past the screen edge; never scroll sideways */
+}
+
+.breath {
+  --breath-size: min(74vw, 300px);
+  --rest: 0.6;                  /* circle size between breaths */
+  --phase-ms: 900ms;
+  display: grid;
+  justify-items: center;
+}
+
+/* Circle and phase text share one grid cell, so the text sits on the circle */
+.breath__stage,
+.breath__phase {
+  grid-area: 1 / 1;
+}
+
+.breath__stage {
+  position: relative;
+  width: var(--breath-size);
+  height: var(--breath-size);
+}
+
+.breath__circle,
+.breath__glow {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(var(--rest));
+  transition:
+    transform var(--phase-ms) ease-in-out,
+    opacity var(--phase-ms) ease-in-out;
+}
+
+/* Colored like the sun */
+.breath__circle {
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, var(--sun-core) 0 42%, var(--sun-edge) 100%);
+  box-shadow: 0 0 50px 14px var(--sun-edge);
+}
+
+.breath__glow {
+  inset: -30%;
+  background: radial-gradient(circle, var(--sun-edge) 0%, transparent 62%);
+  opacity: 0.55;
+}
+
+.breath__phase {
+  align-self: center;
+  z-index: 1;
+  max-width: calc(var(--breath-size) * 0.72);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(24px, 7vw, 30px);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.breath__timer {
+  margin-top: 14px;
+  color: var(--text-soft);
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Phases ---- */
+.breath[data-phase="in"] .breath__circle,
+.breath[data-phase="hold"] .breath__circle,
+.breath[data-phase="in"] .breath__glow,
+.breath[data-phase="hold"] .breath__glow {
+  transform: scale(1);
+}
+.breath[data-phase="in"] .breath__glow,
+.breath[data-phase="hold"] .breath__glow { opacity: 1; }
+
+/* Between sessions the small sun breathes very slowly by itself.
+   It animates `scale`, not `transform`, so it never fights the phase
+   transitions (removing a transform animation would skip the ease). */
+.breath[data-phase="idle"] .breath__circle {
+  animation: breath-idle 6s ease-in-out infinite;
+}
+@keyframes breath-idle {
+  0%, 100% { scale: 1; }
+  50%      { scale: 1.06; }
+}
+
+/* Finished: the circle settles and softly fades, the message fades in */
+.breath[data-phase="done"] .breath__circle { opacity: 0.6; }
+.breath[data-phase="done"] .breath__glow   { opacity: 0.3; }
+/* Longer messages on the small circle: narrower and a little smaller */
+.breath[data-phase="idle"] .breath__phase,
+.breath[data-phase="done"] .breath__phase {
+  max-width: calc(var(--breath-size) * 0.56);
+  font-size: clamp(20px, 5.6vw, 23px);
+}
+.breath[data-phase="done"] .breath__phase {
+  animation: breath-done 2.4s ease both;
+}
+@keyframes breath-done {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---- Controls ---- */
+.breath-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.breath-length {
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.breath-length__legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.25;
+}
+.breath-length__pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.breath-length:disabled { opacity: 0.55; }
+
+/* A native radio, restyled as a pill */
+.pill {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.pill__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: inherit;
+}
+.pill__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 8px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 2px rgba(91, 63, 99, 0.12);
+  color: var(--text-soft);
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.pill__input:checked + .pill__label {
+  background: var(--button);
+  color: var(--on-button);
+  box-shadow: 0 8px 18px -10px var(--button);
+}
+.pill__input:focus-visible + .pill__label {
+  outline: 3px solid var(--text);
+  outline-offset: 3px;
+}
+.pill__input:disabled { cursor: default; }
+
+.breath-sound {
+  display: flex;
+  justify-content: center;
+}
+.breath-sound[hidden] { display: none; }
+
+/* ---- Reduced motion: the circle stays one size and breathes in light instead ---- */
+@media (prefers-reduced-motion: reduce) {
+  .breath__circle,
+  .breath__glow,
+  .breath[data-phase] .breath__circle,
+  .breath[data-phase] .breath__glow {
+    transform: scale(0.84);
+    animation: none;
+  }
+  .breath__circle { opacity: 0.55; }
+  .breath__glow   { opacity: 0.2; }
+  .breath[data-phase="in"] .breath__circle,
+  .breath[data-phase="hold"] .breath__circle { opacity: 1; }
+  .breath[data-phase="in"] .breath__glow,
+  .breath[data-phase="hold"] .breath__glow { opacity: 1; }
+  .breath[data-phase="done"] .breath__circle { opacity: 0.7; }
+  .breath[data-phase="done"] .breath__phase { animation: none; }
+}
+
+
+/* =====================================================================
+   27. Me page (me.html)
+   Uses the Today page layout (body has .page-home too), .greet-name,
+   .card, .home-card__title, the buttons, .card-fallback, and the
+   .joy-list rows (for favorites).
+   Mood colors are the same in every sky, and none of them reads as
+   "bad": low moods are soft cool colors, not grey or red.
+   ===================================================================== */
+.page-me {
+  --mood-very-low: #C9C0EA;   /* soft lavender */
+  --mood-low:      #B9D5EC;   /* soft blue */
+  --mood-okay:     #F4E2A6;   /* butter */
+  --mood-good:     #F9C7A2;   /* peach */
+  --mood-great:    #F4A7BD;   /* pink */
+}
+[data-mood="very-low"] { --mood: var(--mood-very-low); }
+[data-mood="low"]      { --mood: var(--mood-low); }
+[data-mood="okay"]     { --mood: var(--mood-okay); }
+[data-mood="good"]     { --mood: var(--mood-good); }
+[data-mood="great"]    { --mood: var(--mood-great); }
+
+.page-me .home-header .greet-name { margin-bottom: 4px; }
+
+/* ---- Mood check-in: five faces ---- */
+.moods {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+/* A native radio under each face; the whole label is the tap target */
+.mood {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 4px;
+  border-radius: 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mood__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.mood__face {
+  display: block;
+  width: min(54px, 100%);
+  height: auto;
+  border-radius: 50%;
+  transition: transform 0.2s var(--ease-soft), box-shadow 0.2s ease;
+}
+.face__head  { fill: var(--mood); }
+.face__cheek { fill: rgba(244, 143, 168, 0.35); }
+.face__eye   { fill: var(--text); }
+.face__line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.face__mouth { fill: var(--text); }
+
+.mood__label {
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.mood:hover .mood__face { transform: translateY(-2px); }
+.mood__input:checked ~ .mood__face {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px var(--card), 0 0 0 6px var(--button);
+}
+.mood__input:checked ~ .mood__label {
+  color: var(--text);
+  font-weight: 700;
+}
+.mood__input:focus-visible ~ .mood__face {
+  outline: 3px solid var(--text);
+  outline-offset: 7px;
+}
+
+.mood-reply {
+  margin-top: 14px;
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: center;
+}
+.mood-reply:empty { display: none; }
+
+/* ---- Your week: seven soft dots ---- */
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.week__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+/* No check-in: just a light outline, never a "bad" mark */
+.week__dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px dashed rgba(91, 63, 99, 0.2);
+}
+.week__day[data-mood] .week__dot {
+  border: 0;
+  background: var(--mood);
+  box-shadow: inset 0 -3px 6px rgba(91, 63, 99, 0.1), 0 4px 10px -6px rgba(91, 63, 99, 0.5);
+}
+.week__letter {
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
+.week__day.is-today .week__letter {
+  color: var(--button);
+  font-weight: 700;
+}
+
+/* ---- Little numbers ---- */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0 0;
+}
+.numbers__item {
+  display: flex;
+  flex-direction: column-reverse;   /* number on top, label under it */
+  align-items: center;
+  gap: 2px;
+  padding: 14px 6px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+.numbers__value {
+  margin: 0;
+  color: var(--button);
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.numbers__label {
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* ---- Favorites (rows styled like the joy list) ---- */
+.favorites[hidden] { display: none; }
+.favorites__text--quote,
+.favorites__text--poem {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+.favorites__text--poem { white-space: pre-line; }   /* one line per poem line */
+.favorites__empty { margin-top: 12px; }
+
+/* ---- Settings ---- */
+.settings {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.settings li + li { border-top: 1px solid rgba(91, 63, 99, 0.1); }
+
+.settings__row {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.settings__row:focus-visible { border-radius: 12px; }
+.settings__chevron {
+  color: var(--text-soft);
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* On/off switch; its state comes from aria-checked on the row */
+.switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: rgba(91, 63, 99, 0.18);
+  transition: background-color 0.2s ease;
+}
+.switch__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(91, 63, 99, 0.3);
+  transition: transform 0.22s var(--ease-soft);
+}
+[aria-checked="true"] .switch { background: var(--button); }
+[aria-checked="true"] .switch__knob { transform: translateX(20px); }
+
+.reset {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(91, 63, 99, 0.1);
+}
+.reset__open[hidden] { display: none; }
+
+.reset__confirm {
+  width: 100%;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+.reset__confirm[hidden] { display: none; }
+.reset__question {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.reset__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* ---- Support: calm and warm, not an alarm ---- */
+.support {
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--sun-core) 70%, transparent), transparent 70%),
+    var(--card);
+}
+.support__icon {
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 8px;
+  fill: var(--sun-edge);
+  stroke: var(--button);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.support__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.3;
+}
+.support__text {
+  margin-top: 4px;
+  color: var(--text-soft);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.support__link {
+  margin-top: 16px;
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mood__face,
+  .switch,
+  .switch__knob { transition: none; }
+  .mood:hover .mood__face,
+  .mood__input:checked ~ .mood__face { transform: none; }
 }

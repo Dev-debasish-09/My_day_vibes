@@ -1,0 +1,113 @@
+<!doctype html>
+<!--
+  Little Sunshine: the "Breathe" page
+  Same sky and hills as the other pages. The sun comes down to a big glowing
+  circle that grows and shrinks with your breath: in 4s, hold 4s, out 6s.
+  The fixed bottom navigation and the toast are added by shared.js.
+-->
+<html lang="en" data-sky="peach">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
+  <meta name="theme-color" content="#FFD8BE">
+  <meta name="description" content="Just follow the circle. No rush.">
+  <title>Breathe · Little Sunshine</title>
+
+  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+
+  <!-- Fonts: Fraunces for headings, Nunito for everything else -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Loaded in <head> on purpose (no defer): shared.js checks for a saved
+       profile, and breathe.js applies the saved sky before the first paint. -->
+  <script src="shared.js"></script>
+  <script src="breathe.js"></script>
+</head>
+<!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
+<body class="page-home page-breathe">
+
+  <!-- ============ The scene: sky, sun, and two rolling hills (same as index.html) ============ -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <!-- On this page the sun sets behind the hills: the circle below takes its place -->
+    <div class="sun">
+      <div class="sun__glow"></div>
+      <div class="sun__core"></div>
+    </div>
+
+    <svg class="hill hill--back" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 70 C60 40 130 30 200 52 C270 74 330 40 400 48 L400 200 L0 200 Z"/>
+    </svg>
+    <svg class="hill hill--front" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C80 50 150 60 220 85 C290 110 350 70 400 60 L400 200 L0 200 Z"/>
+    </svg>
+  </div>
+
+  <!-- ============ Page content (scrolls over the fixed scene) ============ -->
+  <div class="home">
+
+    <header class="home-header">
+      <h1 class="joy-title">Let's breathe together</h1>
+      <p class="home-date">Just follow the circle. No rush.</p>
+    </header>
+
+    <main class="home-cards">
+
+      <!-- The breathing circle (on the sky, no card).
+           breathe.js sets data-phase: idle, in, hold, out, or done. -->
+      <section class="breath" id="breath" data-phase="idle" aria-labelledby="breath-title">
+        <h2 class="visually-hidden" id="breath-title">Breathing circle</h2>
+
+        <div class="breath__stage" aria-hidden="true">
+          <div class="breath__glow"></div>
+          <div class="breath__circle"></div>
+        </div>
+
+        <!-- Sits over the circle, but outside it, so it never grows or shrinks.
+             aria-live so each phase is read out. -->
+        <p class="breath__phase" id="breath-phase" aria-live="polite">Ready when you are.</p>
+
+        <!-- role=timer is not announced on every tick -->
+        <p class="breath__timer" id="breath-timer" role="timer" aria-label="Time left">1:00</p>
+      </section>
+
+      <!-- Controls -->
+      <section class="card home-card breath-controls" aria-label="Breathing controls">
+        <fieldset class="breath-length" id="breath-length">
+          <legend class="breath-length__legend">How long?</legend>
+          <div class="breath-length__pills">
+            <label class="pill">
+              <input class="pill__input" type="radio" name="length" value="60" checked>
+              <span class="pill__label">1 minute</span>
+            </label>
+            <label class="pill">
+              <input class="pill__input" type="radio" name="length" value="180">
+              <span class="pill__label">3 minutes</span>
+            </label>
+            <label class="pill">
+              <input class="pill__input" type="radio" name="length" value="300">
+              <span class="pill__label">5 minutes</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <button class="btn btn--primary" type="button" id="breath-start">Start</button>
+        <button class="btn btn--soft" type="button" id="breath-stop" hidden>Stop</button>
+
+        <!-- Hidden by breathe.js if the Web Audio API isn't supported -->
+        <div class="breath-sound">
+          <button class="btn btn--link" type="button" id="breath-sound" aria-pressed="false">Sound: off</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>

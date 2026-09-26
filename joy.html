@@ -1,0 +1,152 @@
+<!doctype html>
+<!--
+  Little Sunshine: the "Joy Jar" page
+  Same sky, sun, and hills as the other pages. One small good thing a day
+  becomes a paper star in a glass jar. The fixed bottom navigation and the
+  toast are added by shared.js.
+-->
+<html lang="en" data-sky="peach">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
+  <meta name="theme-color" content="#FFD8BE">
+  <meta name="description" content="One small good thing from today.">
+  <title>Joy Jar · Little Sunshine</title>
+
+  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+
+  <!-- Fonts: Fraunces for headings, Nunito for everything else -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Loaded in <head> on purpose (no defer): shared.js checks for a saved
+       profile, and joy.js applies the saved sky before the first paint. -->
+  <script src="shared.js"></script>
+  <script src="joy.js"></script>
+</head>
+<!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
+<body class="page-home page-joy">
+
+  <!-- ============ The scene: sky, sun, and two rolling hills (same as index.html) ============ -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <div class="sun">
+      <div class="sun__glow"></div>
+      <div class="sun__core"></div>
+    </div>
+
+    <svg class="hill hill--back" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 70 C60 40 130 30 200 52 C270 74 330 40 400 48 L400 200 L0 200 Z"/>
+    </svg>
+    <svg class="hill hill--front" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C80 50 150 60 220 85 C290 110 350 70 400 60 L400 200 L0 200 Z"/>
+    </svg>
+  </div>
+
+  <!-- ============ Page content (scrolls over the fixed scene) ============ -->
+  <div class="home">
+
+    <header class="home-header">
+      <h1 class="joy-title">Your joy jar</h1>
+      <p class="home-date">One small good thing from today.</p>
+    </header>
+
+    <main class="home-cards">
+
+      <!-- The jar (on the sky, no card) -->
+      <section class="jar" id="jar-section" aria-labelledby="jar-title">
+        <h2 class="visually-hidden" id="jar-title">Your jar</h2>
+
+        <!-- joy.js keeps the label in step with the number of stars -->
+        <svg class="jar__svg" id="jar" viewBox="0 30 240 270" role="img" aria-label="An empty glass jar" focusable="false">
+          <defs>
+            <!-- The inside of the glass: stars are clipped to it -->
+            <clipPath id="jar-inside">
+              <path d="M88 66h64v10c0 7 5 11 13 15 22 11 37 29 37 56v108c0 15-11 25-26 25H64c-15 0-26-10-26-25V147c0-27 15-45 37-56 8-4 13-8 13-15z"/>
+            </clipPath>
+            <!-- One paper star, drawn around 0,0. Used by every star in the jar. -->
+            <path id="star-shape" d="M0-11 3.1-4.3 10.5-3.4 5-1.7 6.5 9 0 5.5-6.5 9-5 1.7-10.5-3.4-3.1-4.3z"/>
+          </defs>
+
+          <!-- Soft shadow the jar sits on -->
+          <ellipse class="jar__shadow" cx="120" cy="291" rx="84" ry="7"/>
+
+          <!-- Glass body -->
+          <path class="jar__glass" d="M86 62h68v12c0 7 5 11 13 15 23 11 39 30 39 58v108c0 17-12 29-29 29H63c-17 0-29-12-29-29V147c0-28 16-47 39-58 8-4 13-8 13-15z"/>
+
+          <!-- Stars (filled by joy.js) -->
+          <g clip-path="url(#jar-inside)">
+            <g id="jar-stars"></g>
+          </g>
+
+          <!-- Light glass shine, over the stars -->
+          <path class="jar__shine" d="M56 150c0-16 7-29 20-38"/>
+          <path class="jar__shine jar__shine--soft" d="M52 176v70c0 8 4 14 11 17"/>
+          <path class="jar__shine jar__shine--dot" d="M186 168v22"/>
+
+          <!-- Lid with a small ribbon in the accent color -->
+          <g class="jar__lid" id="jar-lid">
+            <rect class="jar__lid-top" x="78" y="38" width="84" height="26" rx="8"/>
+            <path class="jar__lid-line" d="M86 47h68M86 55h68"/>
+            <rect class="jar__ribbon" x="78" y="64" width="84" height="7" rx="3.5"/>
+            <path class="jar__ribbon" d="M150 67c9-9 20-8 19-1-1 6-11 5-19 1zM150 67c10 1 17 9 11 13-5 3-9-4-11-13z"/>
+            <circle class="jar__ribbon" cx="150" cy="67" r="3.6"/>
+          </g>
+        </svg>
+
+        <!-- Shown only while the jar is empty -->
+        <p class="jar__empty" id="jar-empty" hidden>Your jar is waiting for its first star.</p>
+      </section>
+
+      <!-- Write today's joy -->
+      <section class="card home-card" aria-labelledby="joy-form-title">
+        <h2 class="home-card__title" id="joy-form-title">Today's good thing</h2>
+
+        <form class="joy-form" id="joy-form" novalidate>
+          <label class="visually-hidden" for="joy-input">One small good thing from today</label>
+          <textarea class="joy-input" id="joy-input" rows="3" maxlength="140"
+                    placeholder="Something that made you smile..."
+                    aria-describedby="joy-count joy-hint"></textarea>
+
+          <div class="joy-form__meta">
+            <!-- Only shows a message when "Add" is pressed with nothing written -->
+            <p class="joy-hint" id="joy-hint" aria-live="polite"></p>
+            <p class="joy-count" id="joy-count">0 / 140</p>
+          </div>
+
+          <button class="btn btn--primary" type="submit">Add to my jar</button>
+        </form>
+      </section>
+
+      <!-- Pick a memory (hidden until there's at least one joy) -->
+      <section class="joy-memories" id="joy-memories" aria-label="Memories" hidden>
+        <button class="btn btn--soft" type="button" id="memory-pick">Pick a memory</button>
+
+        <!-- A glass card with one past joy. aria-live so a new pick is read out. -->
+        <figure class="card memory" id="memory" aria-live="polite" hidden>
+          <figcaption class="memory__date" id="memory-date"></figcaption>
+          <blockquote class="memory__text" id="memory-text"></blockquote>
+        </figure>
+
+        <div class="joy-all">
+          <button class="btn btn--link" type="button" id="list-toggle"
+                  aria-expanded="false" aria-controls="joy-list-card">See all</button>
+        </div>
+
+        <!-- All joys, newest first -->
+        <div class="card joy-list-card" id="joy-list-card" hidden>
+          <h2 class="home-card__title">Everything in your jar</h2>
+          <ul class="joy-list" id="joy-list"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>

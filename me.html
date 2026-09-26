@@ -1,0 +1,231 @@
+<!doctype html>
+<!--
+  Little Sunshine: the "Me" page
+  Same sky, sun, and hills as the other pages. Your name, a daily mood
+  check-in, your week, a few gentle numbers, your favorites, settings, and
+  a quiet support card. The fixed bottom navigation and the toast are
+  added by shared.js.
+-->
+<html lang="en" data-sky="peach">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
+  <meta name="theme-color" content="#FFD8BE">
+  <meta name="description" content="Your little corner of Little Sunshine.">
+  <title>Me · Little Sunshine</title>
+
+  <!-- Tiny inline SVG sun as the favicon (no external image files) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
+
+  <!-- Fonts: Fraunces for headings and the name, Nunito for everything else -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Loaded in <head> on purpose (no defer): shared.js checks for a saved
+       profile, and me.js applies the saved sky before the first paint. -->
+  <script src="shared.js"></script>
+  <script src="me.js"></script>
+</head>
+<!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
+<body class="page-home page-me">
+
+  <!-- ============ The scene: sky, sun, and two rolling hills (same as index.html) ============ -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <div class="sun">
+      <div class="sun__glow"></div>
+      <div class="sun__core"></div>
+    </div>
+
+    <svg class="hill hill--back" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 70 C60 40 130 30 200 52 C270 74 330 40 400 48 L400 200 L0 200 Z"/>
+    </svg>
+    <svg class="hill hill--front" viewBox="0 0 400 200" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C80 50 150 60 220 85 C290 110 350 70 400 60 L400 200 L0 200 Z"/>
+    </svg>
+  </div>
+
+  <!-- The face shapes every mood button reuses (the mouth is drawn per mood) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="face-base" viewBox="0 0 100 100">
+      <circle class="face__head" cx="50" cy="50" r="44"/>
+      <circle class="face__cheek" cx="27" cy="60" r="7"/>
+      <circle class="face__cheek" cx="73" cy="60" r="7"/>
+    </symbol>
+    <symbol id="face-eyes" viewBox="0 0 100 100">
+      <circle class="face__eye" cx="36" cy="44" r="4.5"/>
+      <circle class="face__eye" cx="64" cy="44" r="4.5"/>
+    </symbol>
+  </svg>
+
+  <!-- ============ Page content (scrolls over the fixed scene) ============ -->
+  <div class="home">
+
+    <header class="home-header">
+      <h1 class="greet-name" id="me-name">friend</h1>
+      <p class="home-date" id="me-since"></p>
+    </header>
+
+    <main class="home-cards">
+
+      <!-- ---------- Mood check-in ---------- -->
+      <section class="card home-card" aria-labelledby="mood-title">
+        <h2 class="home-card__title" id="mood-title">How are you feeling today?</h2>
+
+        <!-- Native radios, so arrow keys and screen readers just work -->
+        <fieldset class="moods" id="moods">
+          <legend class="visually-hidden">Today's mood</legend>
+
+          <label class="mood" data-mood="very-low">
+            <input class="mood__input" type="radio" name="mood" value="very-low">
+            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <use href="#face-base"/>
+              <use href="#face-eyes"/>
+              <path class="face__line" d="M34 42l8 3M66 42l-8 3"/>
+              <path class="face__line" d="M36 72c7-9 21-9 28 0"/>
+            </svg>
+            <span class="mood__label">Very low</span>
+          </label>
+
+          <label class="mood" data-mood="low">
+            <input class="mood__input" type="radio" name="mood" value="low">
+            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <use href="#face-base"/>
+              <use href="#face-eyes"/>
+              <path class="face__line" d="M38 70c6-5 18-5 24 0"/>
+            </svg>
+            <span class="mood__label">Low</span>
+          </label>
+
+          <label class="mood" data-mood="okay">
+            <input class="mood__input" type="radio" name="mood" value="okay">
+            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <use href="#face-base"/>
+              <use href="#face-eyes"/>
+              <path class="face__line" d="M38 67h24"/>
+            </svg>
+            <span class="mood__label">Okay</span>
+          </label>
+
+          <label class="mood" data-mood="good">
+            <input class="mood__input" type="radio" name="mood" value="good">
+            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <use href="#face-base"/>
+              <use href="#face-eyes"/>
+              <path class="face__line" d="M37 64c7 7 19 7 26 0"/>
+            </svg>
+            <span class="mood__label">Good</span>
+          </label>
+
+          <label class="mood" data-mood="great">
+            <input class="mood__input" type="radio" name="mood" value="great">
+            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <use href="#face-base"/>
+              <path class="face__line" d="M30 43c3-5 9-5 12 0M58 43c3-5 9-5 12 0"/>
+              <path class="face__mouth" d="M34 60h32c0 10-7 16-16 16s-16-6-16-16z"/>
+            </svg>
+            <span class="mood__label">Great</span>
+          </label>
+        </fieldset>
+
+        <!-- A gentle reply that matches the mood -->
+        <p class="mood-reply" id="mood-reply" aria-live="polite"></p>
+      </section>
+
+      <!-- ---------- Your week ---------- -->
+      <section class="card home-card" aria-labelledby="week-title">
+        <h2 class="home-card__title" id="week-title">Your week</h2>
+        <!-- Filled by me.js: 7 days, oldest on the left, today on the right -->
+        <ol class="week" id="week"></ol>
+      </section>
+
+      <!-- ---------- Little numbers ---------- -->
+      <section class="card home-card" aria-labelledby="numbers-title">
+        <h2 class="home-card__title" id="numbers-title">Little numbers</h2>
+        <dl class="numbers">
+          <div class="numbers__item">
+            <dt class="numbers__label">kind things done</dt>
+            <dd class="numbers__value" id="count-kindness">0</dd>
+          </div>
+          <div class="numbers__item">
+            <dt class="numbers__label">stars in your jar</dt>
+            <dd class="numbers__value" id="count-joys">0</dd>
+          </div>
+          <div class="numbers__item">
+            <dt class="numbers__label">favorites saved</dt>
+            <dd class="numbers__value" id="count-favorites">0</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- ---------- Favorites ---------- -->
+      <section class="card home-card" aria-labelledby="favorites-title">
+        <!-- tabindex=-1: focus lands here after the last favorite is removed -->
+        <h2 class="home-card__title" id="favorites-title" tabindex="-1">Favorites</h2>
+        <ul class="joy-list favorites" id="favorites"></ul>
+        <p class="card-fallback favorites__empty" id="favorites-empty" hidden>Tap the heart on a quote or poem to keep it here.</p>
+      </section>
+
+      <!-- ---------- Settings ---------- -->
+      <section class="card home-card" aria-labelledby="settings-title">
+        <h2 class="home-card__title" id="settings-title">Settings</h2>
+
+        <ul class="settings">
+          <li>
+            <!-- "#edit" opens the name screen on the welcome page -->
+            <a class="settings__row" href="./#edit">
+              <span>Change name</span>
+              <span class="settings__chevron" aria-hidden="true">›</span>
+            </a>
+          </li>
+          <li>
+            <!-- "#sky" opens the sky picker on the welcome page -->
+            <a class="settings__row" href="./#sky">
+              <span>Change sky</span>
+              <span class="settings__chevron" aria-hidden="true">›</span>
+            </a>
+          </li>
+          <li>
+            <button class="settings__row" type="button" id="sound-toggle" role="switch" aria-checked="false">
+              <span>Sounds</span>
+              <span class="switch" aria-hidden="true"><span class="switch__knob"></span></span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="reset">
+          <button class="btn btn--link reset__open" type="button" id="reset-open"
+                  aria-expanded="false" aria-controls="reset-confirm">Reset everything</button>
+
+          <!-- The confirmation step -->
+          <div class="reset__confirm" id="reset-confirm" hidden>
+            <p class="reset__question" id="reset-question">This deletes all your saved data. Delete everything?</p>
+            <div class="reset__actions">
+              <button class="btn btn--soft" type="button" id="reset-cancel">Keep my data</button>
+              <button class="btn btn--primary" type="button" id="reset-yes" aria-describedby="reset-question">Delete everything</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Support ---------- -->
+      <section class="card home-card support" aria-labelledby="support-title">
+        <svg class="support__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <path d="M24 40s-14-8.4-14-18.6A7.6 7.6 0 0 1 24 16.6a7.6 7.6 0 0 1 14 4.8C38 31.6 24 40 24 40z"/>
+        </svg>
+        <h2 class="support__title" id="support-title">Having a really hard day?</h2>
+        <p class="support__text">You don't have to carry it alone.</p>
+        <a class="btn btn--soft support__link" href="https://findahelpline.com" target="_blank" rel="noopener noreferrer">
+          Find someone to talk to<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>

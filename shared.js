@@ -13,8 +13,10 @@
   /* -------------------------------------------------------------------
      Settings
      ------------------------------------------------------------------- */
+  const KEY_PREFIX = 'littleSunshine:';            // every key this app saves starts with this
   const PROFILE_KEY = 'littleSunshine:profile';
   const LEGACY_PROFILE_KEY = 'littleSunshine:v1'; // before shared.js; moved over on first read
+  const SOUND_KEY = 'littleSunshine:sound';       // "on" or "off" (off by default)
   const MAX_NAME = 24;
 
   // Order here = order of the sky tiles on the welcome page.
@@ -128,6 +130,40 @@
 
 
   /* -------------------------------------------------------------------
+     Sounds on/off, shared by the Breathe and Me pages
+     ------------------------------------------------------------------- */
+  function loadSoundOn() {
+    try {
+      return localStorage.getItem(SOUND_KEY) === 'on';
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function saveSoundOn(on) {
+    try {
+      localStorage.setItem(SOUND_KEY, on ? 'on' : 'off');
+      return true;
+    } catch (err) {
+      return false; // it just won't be remembered
+    }
+  }
+
+  // "Reset everything": removes every Little Sunshine key (and nothing else
+  // that might share this origin). Returns true if it worked.
+  function clearAllData() {
+    try {
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith(KEY_PREFIX))
+        .forEach((key) => localStorage.removeItem(key));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+
+  /* -------------------------------------------------------------------
      Sky theme. The themes live on <html> (not <body>), so this works
      from <head> before the body exists, and the page background and
      overscroll color match too.
@@ -221,6 +257,9 @@
     todayKey: todayKey,
     loadProfile: loadProfile,
     saveProfile: saveProfile,
+    loadSoundOn: loadSoundOn,
+    saveSoundOn: saveSoundOn,
+    clearAllData: clearAllData,
     applySky: applySky,
     showToast: showToast,
     renderBottomNav: renderBottomNav,
