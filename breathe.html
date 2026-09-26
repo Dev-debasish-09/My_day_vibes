@@ -1,8 +1,9 @@
 <!doctype html>
 <!--
   Little Sunshine: the "Breathe" page
-  Same sky and hills as the other pages. The sun comes down to a big glowing
-  circle that grows and shrinks with your breath: in 4s, hold 4s, out 6s.
+  Same sky and hills as the other pages. A breathing flower (six soft petals
+  and a little sun) opens as you breathe in and closes as you breathe out.
+  While a session runs, the sky dims and everything else fades away.
   The fixed bottom navigation and the toast are added by shared.js.
 -->
 <html lang="en" data-sky="peach">
@@ -11,13 +12,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <!-- Phone status bar color. shared.js keeps this in sync with the saved sky. -->
   <meta name="theme-color" content="#FFD8BE">
-  <meta name="description" content="Just follow the circle. No rush.">
+  <meta name="description" content="Just follow the flower. No rush.">
   <title>Breathe · Little Sunshine</title>
 
   <!-- Tiny inline SVG sun as the favicon (no external image files) -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
 
-  <!-- Fonts: Fraunces for headings, Nunito for everything else -->
+  <!-- Fonts: Fraunces for headings and the phase words, Nunito for everything else -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
@@ -29,14 +30,15 @@
   <script src="shared.js"></script>
   <script src="breathe.js"></script>
 </head>
-<!-- page-home gives the shared page layout (column, nav height, toast position, entrance) -->
+<!-- page-home gives the shared page layout (column, nav height, toast position, entrance).
+     breathe.js adds .is-breathing to <body> while a session runs. -->
 <body class="page-home page-breathe">
 
   <!-- ============ The scene: sky, sun, and two rolling hills (same as index.html) ============ -->
   <div class="scene" aria-hidden="true">
     <div class="sky"></div>
 
-    <!-- On this page the sun sets behind the hills: the circle below takes its place -->
+    <!-- On this page the sun rests behind the hills; it rises a little when you finish -->
     <div class="sun">
       <div class="sun__glow"></div>
       <div class="sun__core"></div>
@@ -50,39 +52,111 @@
     </svg>
   </div>
 
+  <!-- The sky gently dims while a session runs -->
+  <div class="breath-dim" aria-hidden="true"></div>
+
   <!-- ============ Page content (scrolls over the fixed scene) ============ -->
   <div class="home">
 
-    <header class="home-header">
+    <header class="home-header breath-fade">
       <p class="page-eyebrow">A quiet minute</p>
       <h1 class="page-title">Let's breathe together</h1>
-      <p class="page-lead">Just follow the circle. No rush.</p>
+      <p class="page-lead">Just follow the flower. No rush.</p>
     </header>
 
     <main class="home-cards">
 
-      <!-- The breathing circle (on the sky, no card).
-           breathe.js sets data-phase: idle, in, hold, out, or done. -->
+      <!-- ---------- The breathing flower (on the sky, no card) ----------
+           breathe.js sets data-phase: idle, in, hold, out, rest (the hold
+           after breathing out), or done; and --phase-ms, how long it lasts. -->
       <section class="breath" id="breath" data-phase="idle" aria-labelledby="breath-title">
-        <h2 class="visually-hidden" id="breath-title">Breathing circle</h2>
+        <h2 class="visually-hidden" id="breath-title">Breathing flower</h2>
 
-        <div class="breath__stage" aria-hidden="true">
-          <div class="breath__glow"></div>
-          <div class="breath__circle"></div>
+        <div class="flower-stage" aria-hidden="true">
+          <!-- Tiny lights drifting in and out (added by breathe.js) -->
+          <div class="flower-particles" id="particles"></div>
+
+          <!-- Thin ring: fills once per breath -->
+          <svg class="flower-ring" viewBox="0 0 100 100" focusable="false">
+            <circle class="flower-ring__track" cx="50" cy="50" r="48"/>
+            <circle class="flower-ring__progress" id="ring" cx="50" cy="50" r="48" pathLength="100"/>
+          </svg>
+
+          <!-- Six soft petals in a ring, and a little sun in the middle -->
+          <div class="flower">
+            <span class="flower__petal" style="--i: 0; --c: var(--hill-back);  --o: 0.75"></span>
+            <span class="flower__petal" style="--i: 1; --c: var(--sun-edge);   --o: 0.8"></span>
+            <span class="flower__petal" style="--i: 2; --c: var(--hill-front); --o: 0.55"></span>
+            <span class="flower__petal" style="--i: 3; --c: var(--sky-bottom); --o: 0.9"></span>
+            <span class="flower__petal" style="--i: 4; --c: var(--button);     --o: 0.32"></span>
+            <span class="flower__petal" style="--i: 5; --c: var(--sky-top);    --o: 0.9"></span>
+            <span class="flower__sun"></span>
+          </div>
         </div>
 
-        <!-- Sits over the circle, but outside it, so it never grows or shrinks.
-             aria-live so each phase is read out. -->
-        <p class="breath__phase" id="breath-phase" aria-live="polite">Ready when you are.</p>
+        <!-- Phase words: two layers so one can fade out as the next fades in -->
+        <div class="breath__words" aria-hidden="true">
+          <span class="breath__word is-current" id="word-a">Ready when you are.</span>
+          <span class="breath__word" id="word-b"></span>
+        </div>
+        <!-- What screen readers hear: each new phase, once -->
+        <p class="visually-hidden" id="breath-live" aria-live="polite"></p>
 
+        <p class="breath__count" id="breath-count" aria-hidden="true"></p>
         <!-- role=timer is not announced on every tick -->
-        <p class="breath__timer" id="breath-timer" role="timer" aria-label="Time left">1:00</p>
+        <p class="breath__timer" id="breath-timer" role="timer" aria-label="Time left">0:56</p>
+
+        <!-- Start and Stop share one spot, right under the flower -->
+        <div class="breath__actions">
+          <button class="btn btn--primary" type="button" id="breath-start">Start</button>
+          <button class="btn btn--soft" type="button" id="breath-stop" hidden>Stop</button>
+        </div>
       </section>
 
-      <!-- Controls -->
-      <section class="card home-card breath-controls" aria-label="Breathing controls">
-        <fieldset class="breath-length" id="breath-length">
-          <legend class="breath-length__legend">How long?</legend>
+      <!-- ---------- Finished ---------- -->
+      <section class="card home-card breath-finish" id="breath-finish" aria-labelledby="finish-title" hidden>
+        <h2 class="breath-finish__title" id="finish-title" tabindex="-1">Well done.</h2>
+        <p class="breath-finish__text">Notice how you feel now.</p>
+        <div class="breath-finish__actions">
+          <button class="btn btn--primary" type="button" id="breath-again">Breathe again</button>
+          <a class="btn btn--soft" href="home.html">Back to today</a>
+        </div>
+      </section>
+
+      <!-- ---------- Controls (fade away while breathing) ---------- -->
+      <section class="card home-card breath-controls breath-fade" aria-label="Breathing controls">
+        <fieldset class="breath-choice" id="breath-pattern">
+          <legend class="breath-choice__legend">How to breathe</legend>
+          <div class="pattern-list">
+            <label class="pattern">
+              <input class="pattern__input" type="radio" name="pattern" value="calm" checked>
+              <span class="pattern__body">
+                <span class="pattern__name">Calm</span>
+                <span class="pattern__desc">For everyday stress</span>
+                <span class="pattern__beats" aria-label="in 4, hold 4, out 6">4 · 4 · 6</span>
+              </span>
+            </label>
+            <label class="pattern">
+              <input class="pattern__input" type="radio" name="pattern" value="box">
+              <span class="pattern__body">
+                <span class="pattern__name">Box</span>
+                <span class="pattern__desc">For focus</span>
+                <span class="pattern__beats" aria-label="in 4, hold 4, out 4, hold 4">4 · 4 · 4 · 4</span>
+              </span>
+            </label>
+            <label class="pattern">
+              <input class="pattern__input" type="radio" name="pattern" value="sleep">
+              <span class="pattern__body">
+                <span class="pattern__name">Sleep</span>
+                <span class="pattern__desc">For winding down</span>
+                <span class="pattern__beats" aria-label="in 4, hold 7, out 8">4 · 7 · 8</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="breath-choice" id="breath-length">
+          <legend class="breath-choice__legend">How long?</legend>
           <div class="breath-length__pills">
             <label class="pill">
               <input class="pill__input" type="radio" name="length" value="60" checked>
@@ -98,9 +172,6 @@
             </label>
           </div>
         </fieldset>
-
-        <button class="btn btn--primary" type="button" id="breath-start">Start</button>
-        <button class="btn btn--soft" type="button" id="breath-stop" hidden>Stop</button>
 
         <!-- Hidden by breathe.js if the Web Audio API isn't supported -->
         <div class="breath-sound">

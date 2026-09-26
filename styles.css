@@ -1440,9 +1440,16 @@ input { font: inherit; color: inherit; }
 
 /* =====================================================================
    25. Joy Jar page (joy.html)
-   Uses the Today page layout (body has .page-home too), .card,
+   A glowing glass jar full of fairy-light stars. Uses the Today page
+   layout (body has .page-home too), the page header, .card,
    .home-card__title, .btn--primary / --soft / --link and the toast.
    ===================================================================== */
+.page-joy {
+  --paper: #FFF8EA;                               /* cream notes and letters */
+  --paper-line: rgba(124, 98, 132, 0.13);         /* faint ruled lines */
+  overflow-x: clip;                               /* the jar's glow may reach the screen edge */
+}
+
 /* ---- The jar ---- */
 .jar {
   display: flex;
@@ -1450,81 +1457,176 @@ input { font: inherit; color: inherit; }
   align-items: center;
 }
 
-.jar__svg {
-  display: block;
-  width: min(72%, 260px);
-  height: auto;
-  overflow: visible;
+.jar__stage {
+  --glow: 0.18;                                   /* set by joy.js: more stars, brighter */
+  position: relative;
+  width: min(70vw, 320px);
 }
+
+/* Warm light behind the jar */
+.jar__glow {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: min(150%, 96vw);          /* wide and soft, but never wider than the screen */
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    var(--sun-core) 0%,
+    color-mix(in srgb, var(--sun-edge) 85%, transparent) 30%,
+    transparent 66%);
+  opacity: var(--glow);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+/* A star just landed: a short, brighter glow */
+.jar__stage.is-flashing .jar__glow {
+  animation: jar-flash 1s ease-out;
+}
+@keyframes jar-flash {
+  30% { opacity: calc(var(--glow) + 0.4); transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.jar__svg {
+  position: relative;               /* above the glow */
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;                /* a rising star can leave the top */
+  transform-origin: 50% 95%;
+}
+/* "Pick a memory": a small shake first */
+.jar__stage.is-shaking .jar__svg {
+  animation: jar-shake 0.5s ease-in-out;
+}
+@keyframes jar-shake {
+  20% { transform: rotate(-3deg); }
+  45% { transform: rotate(2.5deg); }
+  70% { transform: rotate(-1.5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Only the stars take taps; the glass details lie over them */
+.jar__deco { pointer-events: none; }
 
 .jar__shadow { fill: rgba(91, 63, 99, 0.16); }
 
+/* Glass: tinted with the sky, semi-transparent, bright edge */
 .jar__glass {
-  fill: rgba(255, 255, 255, 0.28);
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-width: 3;
-  /* a faint darker edge so the glass reads on pale hills too */
-  filter: drop-shadow(0 0 1px rgba(91, 63, 99, 0.35)) drop-shadow(0 10px 18px rgba(91, 63, 99, 0.18));
+  fill: url(#glass-fill);
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 2.5;
+  filter:
+    drop-shadow(0 0 1px rgba(91, 63, 99, 0.3))
+    drop-shadow(0 12px 20px rgba(91, 63, 99, 0.16));
 }
-
-.jar__shine {
+.jar__base {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 6;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 4;
   stroke-linecap: round;
 }
-.jar__shine--soft { stroke: rgba(255, 255, 255, 0.5); stroke-width: 4; }
-.jar__shine--dot  { stroke: rgba(255, 255, 255, 0.55); stroke-width: 4; }
 
-.jar__lid-top {
-  fill: rgba(255, 251, 246, 0.95);
-  stroke: rgba(91, 63, 99, 0.22);
-  stroke-width: 1.5;
-}
-.jar__lid-line {
+/* Two long highlight streaks on the left, a faint reflection on the right */
+.jar__streak,
+.jar__reflection {
   fill: none;
-  stroke: rgba(91, 63, 99, 0.12);
-  stroke-width: 1.5;
   stroke-linecap: round;
 }
+.jar__streak { stroke: rgba(255, 255, 255, 0.85); stroke-width: 6; }
+.jar__streak--thin { stroke: rgba(255, 255, 255, 0.55); stroke-width: 2.5; }
+.jar__reflection { stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
+
+/* Rim, cork, ribbon */
+.jar__rim {
+  fill: rgba(255, 255, 255, 0.35);
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 2;
+}
+.jar__cork {
+  fill: url(#cork-fill);
+  stroke: rgba(91, 63, 99, 0.25);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.jar__cork-top {
+  fill: #EDC9A1;
+  stroke: rgba(91, 63, 99, 0.2);
+  stroke-width: 1;
+}
+.jar__cork-dot { fill: rgba(120, 72, 40, 0.45); }
 .jar__ribbon { fill: var(--button); }
+.jar__ribbon-knot { filter: brightness(0.88); }
 
-.jar__empty {
-  margin-top: 10px;
-  color: var(--text-soft);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 18px;
-  text-align: center;
+/* The cork lifts a little as a star goes in or out */
+.jar__lid {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+.jar__lid.is-bumped { animation: lid-bump 0.55s var(--ease-soft); }
+@keyframes lid-bump {
+  0%   { transform: translateY(0) rotate(0deg); }
+  35%  { transform: translateY(-9px) rotate(-4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
 }
 
-/* ---- Paper stars ---- */
-.jar-star {
+/* Empty jar: one faint sparkle */
+.jar__sparkle {
+  fill: #FFFFFF;
+  opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
 }
+.jar__stage.is-empty .jar__sparkle {
+  animation: jar-sparkle 4s ease-in-out infinite;
+}
+@keyframes jar-sparkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8) rotate(0deg); }
+  50%      { opacity: 0.7;  transform: scale(1.1) rotate(20deg); }
+}
+
+/* ---- Fairy-light stars ---- */
+.jar-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  cursor: pointer;
+}
+.jar-star__hit { fill: transparent; }          /* a bigger tap target */
+
+/* Warm halo that twinkles at each star's own pace (--tw, --tw-delay) */
+.jar-star__halo {
+  fill: url(#fairy-halo);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: star-twinkle var(--tw, 4s) ease-in-out var(--tw-delay, 0s) infinite alternate;
+}
+@keyframes star-twinkle {
+  from { opacity: 0.35; }
+  to   { opacity: 1; }
+}
+.jar-star-place:hover .jar-star__halo { opacity: 1; animation-play-state: paused; }
+
 .jar-star__paper {
   fill: var(--c);
   stroke: var(--c);           /* same color, round joins: soft puffy points */
   stroke-width: 3;
   stroke-linejoin: round;
-  filter: drop-shadow(0 1px 0.6px rgba(91, 63, 99, 0.35));
 }
 .jar-star__folds {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.5);
+  stroke: rgba(255, 255, 255, 0.55);
   stroke-width: 0.8;
   stroke-linecap: round;
+  pointer-events: none;
 }
 
-/* Falls in from under the lid, spinning a little, and lands with a soft bounce */
+/* A new star drops in from the mouth, spinning a little, and lands with a soft bounce */
 .jar-star.is-dropping {
   animation: star-drop 0.95s cubic-bezier(0.45, 0, 0.7, 0.4) both;
 }
 @keyframes star-drop {
-  0%   { transform: translateY(var(--drop)) rotate(calc(var(--turn) * -3)); opacity: 0; }
-  12%  { opacity: 1; }
+  0%   { transform: translateY(var(--drop)) rotate(calc(var(--turn) * -3)); }
   62%  { transform: translateY(0) rotate(0deg); animation-timing-function: ease-out; }
   78%  { transform: translateY(-9px) rotate(6deg); animation-timing-function: ease-in; }
   90%  { transform: translateY(0) rotate(0deg); animation-timing-function: ease-out; }
@@ -1532,47 +1634,124 @@ input { font: inherit; color: inherit; }
   100% { transform: translateY(0); }
 }
 
-/* The lid gives a tiny hop as a star goes in */
-.jar__lid {
-  transform-box: fill-box;
-  transform-origin: center bottom;
+/* The note on its way to the jar (made by joy.js, removed on arrival).
+   The wrapper moves and glows; the paper inside is clipped to its shape. */
+.fly-star {
+  position: fixed;
+  z-index: 30;
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 6px var(--sun-edge))
+    drop-shadow(0 4px 6px rgba(91, 63, 99, 0.2));
+  will-change: transform;
 }
-.jar__lid.is-bumped { animation: lid-bump 0.5s var(--ease-soft); }
-@keyframes lid-bump {
-  0%   { transform: translateY(0) rotate(0deg); }
-  35%  { transform: translateY(-7px) rotate(-3deg); }
-  100% { transform: translateY(0) rotate(0deg); }
+.fly-star__paper {
+  width: 100%;
+  height: 100%;
+  background: var(--paper);
 }
 
-/* ---- Writing a joy ---- */
-.joy-form { margin-top: 16px; }
+/* ---- Under the jar ---- */
+.jar__count {
+  margin-top: 14px;
+  color: var(--text-soft);
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
+.jar__empty {
+  margin-top: 14px;
+  color: var(--text-soft);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  text-align: center;
+}
+.jar__count[hidden],
+.jar__empty[hidden],
+.jar__pick[hidden] { display: none; }
 
-/* 18px so iOS Safari does not zoom in when the field is focused */
-.joy-input {
+.jar__pick {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+.jar__pick .btn--soft {
+  width: auto;
+  padding: 14px 34px;
+}
+
+/* ---- Writing a joy: a small paper note ---- */
+.joy-write { margin-top: 6px; }
+
+.note {
+  position: relative;
+  padding: 18px 20px 14px;
+  border-radius: 6px;
+  background: var(--paper);
+  transform: rotate(-1deg);
+  box-shadow:
+    0 1px 2px rgba(91, 63, 99, 0.08),
+    0 12px 26px -12px rgba(91, 63, 99, 0.35);
+}
+/* A strip of washi tape holding the note */
+.note::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 84px;
+  height: 22px;
+  margin-left: -42px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--button) 28%, rgba(255, 255, 255, 0.55));
+  transform: rotate(-3deg);
+  box-shadow: 0 1px 2px rgba(91, 63, 99, 0.12);
+}
+.note:focus-within {
+  outline: 3px solid var(--button);
+  outline-offset: 4px;
+}
+.note:has(.note__input[aria-invalid="true"]) {
+  outline: 2px solid var(--button);
+  outline-offset: 4px;
+}
+
+.note__title {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Ruled lines sit under each line of writing (32px apart) and scroll with it */
+.note__input {
   display: block;
   width: 100%;
-  min-height: 108px;
-  padding: 14px 16px;
-  resize: vertical;
-  font: inherit;
-  font-size: 18px;
-  line-height: 1.45;
+  min-height: 96px;
+  padding: 0;
+  border: 0;
+  resize: none;
+  background-color: transparent;
+  background-image: repeating-linear-gradient(to bottom,
+    transparent 0 31px, var(--paper-line) 31px 32px);
+  background-attachment: local;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.75);
-  border: 2px solid rgba(91, 63, 99, 0.16);
-  border-radius: var(--radius-input);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 20px;                 /* 16px+ so iOS doesn't zoom in */
+  line-height: 32px;
 }
-.joy-input::placeholder {
-  color: rgba(124, 98, 132, 0.62);
+.note__input::placeholder {
+  color: rgba(124, 98, 132, 0.6);
   opacity: 1;
 }
-.joy-input:focus {
-  outline: none;
-  border-color: var(--button);
-  box-shadow: 0 0 0 4px rgba(91, 63, 99, 0.12);
-}
-.joy-input[aria-invalid="true"] { border-color: var(--button); }
+.note__input:focus { outline: none; }
 
 .joy-form__meta {
   display: flex;
@@ -1580,7 +1759,7 @@ input { font: inherit; color: inherit; }
   align-items: baseline;
   gap: 12px;
   min-height: 24px;             /* reserves the line so the button doesn't jump */
-  margin: 8px 4px 12px;
+  margin: 12px 4px 12px;
   font-size: 16px;
 }
 .joy-hint {
@@ -1593,76 +1772,78 @@ input { font: inherit; color: inherit; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- Pick a memory ---- */
-.joy-memories {
+/* ---- See all: paper notes grouped by month ---- */
+.joy-all[hidden] { display: none; }
+.joy-all__toggle {
+  display: flex;
+  justify-content: center;
+}
+.joy-list-card[hidden] { display: none; }
+.joy-list-card { margin-top: 6px; }
+
+.note-group { margin-top: 16px; }
+.note-group__title {
+  margin: 0 0 12px;
+  color: var(--text-soft);
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.note-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-.joy-memories[hidden] { display: none; }
-
-.memory {
+  gap: 14px;
   margin: 0;
-  text-align: center;
-  transition: opacity 0.24s ease;
+  padding: 0;
+  list-style: none;
 }
-.memory[hidden] { display: none; }
-.memory.is-fading { opacity: 0; }
+.note-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 5px;
+  background: var(--paper);
+  transform: rotate(-0.8deg);
+  box-shadow:
+    0 1px 2px rgba(91, 63, 99, 0.08),
+    0 8px 16px -10px rgba(91, 63, 99, 0.35);
+}
+.note-item:nth-child(even) { transform: rotate(0.7deg); }
 
-.memory__date {
-  color: var(--text-soft);
-  font-size: 16px;
-  font-weight: 600;
+/* The note itself opens the memory */
+.note-item__open {
+  appearance: none;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 10px 10px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.memory__text {
-  margin: 10px 0 0;
+.note-item__text {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 500;
-  font-size: 1.35rem;
-  line-height: 1.45;
+  font-size: 18px;
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
-
-/* ---- See all ---- */
-.joy-all {
-  display: flex;
-  justify-content: center;
-  margin-top: -8px;
-}
-.joy-list-card[hidden] { display: none; }
-
-.joy-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-}
-.joy-list__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 0;
-  border-top: 1px solid rgba(91, 63, 99, 0.1);
-}
-.joy-list__item:first-child { border-top: 0; }
-
-.joy-list__words {
-  flex: 1;
-  min-width: 0;
-}
-.joy-list__text {
-  font-size: 17px;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-.joy-list__date {
-  margin-top: 2px;
+.note-item__date {
   color: var(--text-soft);
   font-size: 16px;
 }
 
 /* Quiet until armed: the first tap turns it into "Delete?" in the accent color */
-.joy-list__delete {
+.note-item__delete {
   appearance: none;
   flex: none;
   min-width: 76px;
@@ -1670,7 +1851,7 @@ input { font: inherit; color: inherit; }
   padding: 8px 12px;
   border: 0;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(91, 63, 99, 0.06);
   color: var(--text-soft);
   font-family: var(--font-sans);
   font-weight: 700;
@@ -1679,145 +1860,401 @@ input { font: inherit; color: inherit; }
   touch-action: manipulation;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.joy-list__delete:hover { color: var(--text); background: rgba(255, 255, 255, 0.85); }
-.joy-list__delete.is-armed {
+.note-item__delete:hover { color: var(--text); background: rgba(255, 255, 255, 0.85); }
+.note-item__delete.is-armed {
   background: var(--button);
   color: var(--on-button);
 }
 
+/* ---- A memory: a small letter over a softly blurred page ---- */
+.memory {
+  width: min(calc(100% - 32px), 380px);
+  max-width: none;
+  padding: 0;                     /* taps on the dialog itself = outside the letter */
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: visible;
+}
+.memory::backdrop {
+  background: rgba(91, 63, 99, 0.22);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: memory-backdrop-in 0.35s ease;
+}
+@keyframes memory-backdrop-in { from { opacity: 0; } }
+
+.letter {
+  position: relative;
+  padding: 30px 24px 12px;
+  border-radius: 8px;
+  /* cream paper with a soft crease where it was folded */
+  background:
+    linear-gradient(to bottom, transparent calc(50% - 1px), rgba(91, 63, 99, 0.08) 50%, transparent calc(50% + 1px)),
+    var(--paper);
+  box-shadow:
+    0 1px 2px rgba(91, 63, 99, 0.08),
+    0 16px 40px -12px rgba(91, 63, 99, 0.4);
+  transform-origin: 50% 0;
+}
+/* Opens by unfolding from the top */
+.memory[open] .letter {
+  animation: letter-unfold 0.6s var(--ease-soft) both;
+}
+@keyframes letter-unfold {
+  0%   { opacity: 0; transform: perspective(900px) rotateX(-80deg) scaleY(0.7) translateY(-12px); }
+  45%  { opacity: 1; }
+  100% { transform: none; }
+}
+.memory.is-closing .letter {
+  animation: letter-close 0.2s ease forwards;
+}
+.memory.is-closing::backdrop {
+  animation: memory-backdrop-out 0.2s ease forwards;
+}
+@keyframes letter-close { to { opacity: 0; transform: translateY(8px) scale(0.97); } }
+@keyframes memory-backdrop-out { to { opacity: 0; } }
+
+/* Round, dashed date stamp in the corner */
+.letter__stamp {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border: 2px dashed var(--button);
+  border-radius: 50%;
+  color: var(--button);
+  line-height: 1;
+  transform: rotate(-10deg);
+  box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5px color-mix(in srgb, var(--button) 45%, transparent);
+}
+.letter__stamp-day {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 26px;
+}
+.letter__stamp-month {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.letter__intro {
+  min-height: 52px;              /* keeps the text clear of the stamp */
+  padding-right: 80px;
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
+.letter__text {
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.letter__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .jar__stage.is-flashing .jar__glow,
+  .jar__stage.is-shaking .jar__svg,
   .jar-star.is-dropping,
-  .jar__lid.is-bumped { animation: none; }
-  .memory { transition: none; }
+  .jar__lid.is-bumped,
+  .memory[open] .letter,
+  .memory.is-closing .letter,
+  .memory::backdrop { animation: none; }
+  .jar-star__halo { animation: none; opacity: 0.6; }
+  .jar__stage.is-empty .jar__sparkle { animation: none; opacity: 0.45; }
 }
 
 
 /* =====================================================================
    26. Breathe page (breathe.html)
+   A breathing flower: six soft petals that open as you breathe in and
+   close as you breathe out, a thin ring that fills once per breath, and
+   tiny lights that drift in and out. breathe.js sets data-phase on
+   .breath (idle, in, hold, out, rest, done) and --phase-ms (how long
+   each change takes); CSS does all the moving.
    Uses the Today page layout (body has .page-home too), the page header,
-   .card, .btn--primary / --soft / --link.
-   The circle's size follows data-phase on .breath; --phase-ms (set by
-   breathe.js) is how long each change takes: 4s in, 4s hold, 6s out.
+   .card, .btn--primary / --soft / --link, and the falling .petals.
    ===================================================================== */
 .page-breathe {
-  overflow-x: clip;             /* the glow may reach past the screen edge; never scroll sideways */
+  overflow-x: clip;             /* drifting lights may reach past the screen edge; never scroll sideways */
 }
 
 .breath {
-  --breath-size: min(74vw, 300px);
-  --rest: 0.6;                  /* circle size between breaths */
-  --phase-ms: 900ms;
-  display: grid;
-  justify-items: center;
+  --S: min(72vw, 300px);        /* the flower's size */
+  --phase-ms: 1200ms;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Circle and phase text share one grid cell, so the text sits on the circle */
-.breath__stage,
-.breath__phase {
-  grid-area: 1 / 1;
-}
-
-.breath__stage {
+.flower-stage {
   position: relative;
-  width: var(--breath-size);
-  height: var(--breath-size);
+  width: var(--S);
+  height: var(--S);
 }
 
-.breath__circle,
-.breath__glow {
+/* ---- The flower ---- */
+.flower {
   position: absolute;
-  border-radius: 50%;
-  transform: scale(var(--rest));
-  transition:
-    transform var(--phase-ms) ease-in-out,
-    opacity var(--phase-ms) ease-in-out;
-}
-
-/* Colored like the sun */
-.breath__circle {
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, var(--sun-core) 0 42%, var(--sun-edge) 100%);
-  box-shadow: 0 0 50px 14px var(--sun-edge);
+  isolation: isolate;           /* petals multiply with each other, not with the sky */
+}
+.breath[data-phase="idle"] .flower {
+  animation: flower-idle 6s ease-in-out infinite;   /* a slow, tiny breath of its own */
+}
+@keyframes flower-idle {
+  0%, 100% { scale: 1; }
+  50%      { scale: 1.04; }
 }
 
-.breath__glow {
-  inset: -30%;
-  background: radial-gradient(circle, var(--sun-edge) 0%, transparent 62%);
-  opacity: 0.55;
+/* Each petal sits at 60deg steps (--i), colored by the sky (--c, --o) */
+.flower__petal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42%;
+  aspect-ratio: 1;
+  margin: -21% 0 0 -21%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 60%, #FFFFFF) 0%, var(--c) 72%);
+  opacity: var(--o);
+  mix-blend-mode: multiply;
+  transform: rotate(calc(var(--i) * 60deg)) translateY(-18%);
+  transition:
+    transform var(--phase-ms) cubic-bezier(0.45, 0.05, 0.35, 1),
+    opacity var(--phase-ms) ease,
+    filter var(--phase-ms) ease;
+}
+/* Breathing in: the petals move outward, the flower opens and turns a little */
+.breath[data-phase="in"] .flower__petal,
+.breath[data-phase="hold"] .flower__petal {
+  transform: rotate(calc(var(--i) * 60deg + 20deg)) translateY(-58%) scale(1.06);
 }
 
-.breath__phase {
-  align-self: center;
+/* The little sun in the middle */
+.flower__sun {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   z-index: 1;
-  max-width: calc(var(--breath-size) * 0.72);
+  width: 16%;
+  aspect-ratio: 1;
+  margin: -8% 0 0 -8%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 40%, var(--sun-core) 0 40%, var(--sun-edge) 100%);
+  box-shadow:
+    0 0 18px 6px var(--sun-edge),
+    0 0 44px 12px color-mix(in srgb, var(--sun-core) 60%, transparent);
+  transition: transform var(--phase-ms) ease-in-out;
+}
+.breath[data-phase="in"] .flower__sun,
+.breath[data-phase="hold"] .flower__sun { transform: scale(1.25); }
+
+/* ---- Thin ring: fills once per breath ---- */
+.flower-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);    /* start at the top */
+}
+.flower-ring__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 0.8;
+}
+.flower-ring__progress {
+  fill: none;
+  stroke: var(--button);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.flower-ring__progress.is-filling {
+  opacity: 0.85;
+  animation: ring-fill var(--cycle-ms, 14s) linear forwards;
+}
+@keyframes ring-fill {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ---- Tiny lights: toward the flower on "in", away on "out" ---- */
+.flower-particles {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+.flower-particle {
+  position: absolute;
+  left: calc(var(--size) / -2);
+  top: calc(var(--size) / -2);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 6px 2px var(--sun-core);
+  opacity: 0;
+  transform: rotate(var(--a)) translateY(calc(var(--S) * var(--far) * -1));
+  transition:
+    transform var(--phase-ms) ease-in-out var(--delay),
+    opacity 1.2s ease;
+}
+.is-breathing .flower-particle { opacity: var(--po); }
+.breath[data-phase="in"] .flower-particle,
+.breath[data-phase="hold"] .flower-particle {
+  transform: rotate(calc(var(--a) + 14deg)) translateY(calc(var(--S) * var(--near) * -1));
+}
+
+/* ---- Phase words (cross-fading), countdown, time left ---- */
+.breath__words {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 24px;
+}
+.breath__word {
+  grid-area: 1 / 1;
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 500;
-  font-size: clamp(24px, 7vw, 30px);
-  line-height: 1.25;
+  font-size: clamp(32px, 9.5vw, 42px);
+  line-height: 1.2;
   text-align: center;
+  opacity: 0;
+  transition: opacity 0.7s ease;
 }
+.breath__word.is-current { opacity: 1; }
+.breath[data-phase="idle"] .breath__word { font-size: clamp(24px, 7vw, 28px); }
 
-.breath__timer {
-  margin-top: 14px;
+.breath__count {
+  min-height: 34px;
+  margin-top: 2px;
   color: var(--text-soft);
-  font-size: 18px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.breath__timer {
+  color: var(--text-soft);
+  font-size: 16px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-
-/* ---- Phases ---- */
-.breath[data-phase="in"] .breath__circle,
-.breath[data-phase="hold"] .breath__circle,
-.breath[data-phase="in"] .breath__glow,
-.breath[data-phase="hold"] .breath__glow {
-  transform: scale(1);
+.breath__actions {
+  display: flex;
+  justify-content: center;
+  min-height: 54px;             /* Start and Stop swap here, so nothing moves */
+  margin-top: 14px;
 }
-.breath[data-phase="in"] .breath__glow,
-.breath[data-phase="hold"] .breath__glow { opacity: 1; }
-
-/* Between sessions the small sun breathes very slowly by itself.
-   It animates `scale`, not `transform`, so it never fights the phase
-   transitions (removing a transform animation would skip the ease). */
-.breath[data-phase="idle"] .breath__circle {
-  animation: breath-idle 6s ease-in-out infinite;
-}
-@keyframes breath-idle {
-  0%, 100% { scale: 1; }
-  50%      { scale: 1.06; }
+.breath__actions .btn {
+  width: auto;
+  min-width: 160px;
+  padding: 14px 40px;
 }
 
-/* Finished: the circle settles and softly fades, the message fades in */
-.breath[data-phase="done"] .breath__circle { opacity: 0.6; }
-.breath[data-phase="done"] .breath__glow   { opacity: 0.3; }
-/* Longer messages on the small circle: narrower and a little smaller */
-.breath[data-phase="idle"] .breath__phase,
-.breath[data-phase="done"] .breath__phase {
-  max-width: calc(var(--breath-size) * 0.56);
-  font-size: clamp(20px, 5.6vw, 23px);
+/* ---- While breathing: the sky dims, everything else fades away ---- */
+.breath-dim {
+  position: fixed;
+  inset: 0;
+  z-index: 3;                   /* over the sky, under the page content */
+  background: rgba(38, 24, 48, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.4s ease;
 }
-.breath[data-phase="done"] .breath__phase {
-  animation: breath-done 2.4s ease both;
+.is-breathing .breath-dim { opacity: 1; }
+
+/* Faded parts keep their space (so the flower never jumps) and can't be tabbed to */
+.breath-fade,
+.page-breathe .tabbar {
+  transition: opacity 0.9s ease, transform 0.9s ease, visibility 0s linear 0s;
 }
-@keyframes breath-done {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.is-breathing .breath-fade {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.9s ease, visibility 0s linear 0.9s;
 }
+.is-breathing .tabbar {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease, transform 0.9s ease, visibility 0s linear 0.9s;
+}
+
+/* ---- Finished ---- */
+/* The card has its own "Breathe again", so Start and the spent timer step aside */
+.breath[data-phase="done"] .breath__timer,
+.breath[data-phase="done"] .breath__actions,
+.breath[data-phase="done"] .breath__count { display: none; }
+
+.breath-finish {
+  text-align: center;
+  animation: finish-in 0.7s var(--ease-soft) both;
+}
+.breath-finish[hidden] { display: none; }
+@keyframes finish-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+.breath-finish__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 1.2;
+}
+.breath-finish__text {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 18px;
+}
+.breath-finish__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+.breath-finish__actions a.btn { text-decoration: none; }
 
 /* ---- Controls ---- */
 .breath-controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
-.breath-length {
-  margin: 0 0 6px;
+.breath-choice {
+  margin: 0 0 4px;
   padding: 0;
   border: 0;
   min-width: 0;
 }
-.breath-length__legend {
+.breath-choice__legend {
   padding: 0;
   margin-bottom: 10px;
   font-family: var(--font-serif);
@@ -1825,14 +2262,76 @@ input { font: inherit; color: inherit; }
   font-size: 22px;
   line-height: 1.25;
 }
+
+/* Patterns: a native radio restyled as a wide pill with a one-line description */
+.pattern-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pattern {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.pattern__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.pattern__body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 12px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 2px rgba(91, 63, 99, 0.12);
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.pattern__name {
+  font-size: 17px;
+  font-weight: 700;
+}
+.pattern__desc {
+  grid-row: 2;
+  color: var(--text-soft);
+  font-size: 16px;
+}
+.pattern__beats {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pattern__input:checked + .pattern__body {
+  background: var(--button);
+  color: var(--on-button);
+  box-shadow: 0 8px 18px -10px var(--button);
+}
+.pattern__input:checked + .pattern__body .pattern__desc,
+.pattern__input:checked + .pattern__body .pattern__beats {
+  color: color-mix(in srgb, var(--on-button) 85%, transparent);
+}
+.pattern__input:focus-visible + .pattern__body {
+  outline: 3px solid var(--text);
+  outline-offset: 3px;
+}
+
+/* Length: three pills in a row */
 .breath-length__pills {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
-.breath-length:disabled { opacity: 0.55; }
-
-/* A native radio, restyled as a pill */
 .pill {
   position: relative;
   display: block;
@@ -1877,40 +2376,42 @@ input { font: inherit; color: inherit; }
 }
 .breath-sound[hidden] { display: none; }
 
-/* ---- Reduced motion: the circle stays one size and breathes in light instead ---- */
+/* ---- Reduced motion: the flower only changes opacity and color ---- */
 @media (prefers-reduced-motion: reduce) {
-  .breath__circle,
-  .breath__glow,
-  .breath[data-phase] .breath__circle,
-  .breath[data-phase] .breath__glow {
-    transform: scale(0.84);
-    animation: none;
+  .breath[data-phase] .flower { animation: none; }
+  .breath[data-phase] .flower__petal {
+    transform: rotate(calc(var(--i) * 60deg)) translateY(-38%);
+    opacity: calc(var(--o) * 0.55);
+    filter: saturate(0.8);
   }
-  .breath__circle { opacity: 0.55; }
-  .breath__glow   { opacity: 0.2; }
-  .breath[data-phase="in"] .breath__circle,
-  .breath[data-phase="hold"] .breath__circle { opacity: 1; }
-  .breath[data-phase="in"] .breath__glow,
-  .breath[data-phase="hold"] .breath__glow { opacity: 1; }
-  .breath[data-phase="done"] .breath__circle { opacity: 0.7; }
-  .breath[data-phase="done"] .breath__phase { animation: none; }
+  .breath[data-phase="in"] .flower__petal,
+  .breath[data-phase="hold"] .flower__petal {
+    opacity: min(1, calc(var(--o) + 0.2));
+    filter: saturate(1.35) brightness(1.04);
+  }
+  .breath[data-phase] .flower__sun { transform: none; }
+  .flower-particles { display: none; }
+  .breath-finish { animation: none; }
+  .is-breathing .tabbar { transform: none; }
 }
 
 
 /* =====================================================================
    27. Me page (me.html)
-   Uses the Today page layout (body has .page-home too), the page header,
-   .card, .home-card__title, the buttons, .card-fallback, and the
-   .joy-list rows (for favorites).
+   A little sky card with your name, soft mood blobs, your garden this
+   week, number tiles, a swipeable row of favorites, a phone-style
+   settings list, and a warm support card. Uses the Today page layout
+   (body has .page-home too), the page header lines, .card,
+   .home-card__title, and the buttons.
    Mood colors are the same in every sky, and none of them reads as
    "bad": low moods are soft cool colors, not grey or red.
    ===================================================================== */
 .page-me {
-  --mood-very-low: #C9C0EA;   /* soft lavender */
-  --mood-low:      #B9D5EC;   /* soft blue */
-  --mood-okay:     #F4E2A6;   /* butter */
-  --mood-good:     #F9C7A2;   /* peach */
-  --mood-great:    #F4A7BD;   /* pink */
+  --mood-very-low: #C3CBEF;   /* soft blue-lavender */
+  --mood-low:      #D4C4F1;   /* lavender */
+  --mood-okay:     #F6E0A0;   /* butter */
+  --mood-good:     #F9C39C;   /* peach */
+  --mood-great:    #F4A6BE;   /* pink */
 }
 [data-mood="very-low"] { --mood: var(--mood-very-low); }
 [data-mood="low"]      { --mood: var(--mood-low); }
@@ -1918,26 +2419,87 @@ input { font: inherit; color: inherit; }
 [data-mood="good"]     { --mood: var(--mood-good); }
 [data-mood="great"]    { --mood: var(--mood-great); }
 
-/* ---- Mood check-in: five faces ---- */
+/* Section titles that sit on the sky (outside a card) */
+.section-title { margin: 8px 4px 12px; }
+
+/* ---- Profile: a little sky card ---- */
+.profile {
+  position: relative;
+  height: 250px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: var(--radius-card);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(91, 63, 99, 0.06),
+    0 8px 24px -8px rgba(91, 63, 99, 0.18),
+    0 24px 48px -24px rgba(91, 63, 99, 0.22);
+}
+.profile__sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 85%);
+}
+.profile__sun {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 104px;
+  height: 104px;
+  margin: -52px 0 0 -52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, var(--sun-core) 0 45%, var(--sun-edge) 100%);
+  box-shadow: 0 0 40px 12px var(--sun-edge);
+}
+.profile__sun::before {
+  content: "";
+  position: absolute;
+  inset: -70%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sun-edge) 0%, transparent 62%);
+  opacity: 0.7;
+}
+.profile__hill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+}
+.profile__hill--back  { height: 40%; }
+.profile__hill--front { height: 28%; }
+.profile__hill--back path  { fill: var(--hill-back); }
+.profile__hill--front path { fill: var(--hill-front); }
+
+.profile__text {
+  position: relative;
+  z-index: 1;
+  padding: 30px 16px 0;
+  text-align: center;
+}
+.profile .page-title { margin: 2px 0 6px; }
+.profile__since { color: var(--text); }
+
+/* ---- Mood check-in: soft round blobs ---- */
 .moods {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   padding: 0;
   border: 0;
   min-width: 0;
 }
 
-/* A native radio under each face; the whole label is the tap target */
+/* A native radio under each blob; the whole label is the tap target */
 .mood {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 6px 0 4px;
-  border-radius: 18px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1951,15 +2513,27 @@ input { font: inherit; color: inherit; }
   cursor: inherit;
 }
 
+.mood__blob {
+  display: block;
+  width: min(56px, 100%);
+  aspect-ratio: 1;
+  /* a little uneven, like a pebble */
+  border-radius: 46% 54% 52% 48% / 52% 46% 54% 48%;
+  background: radial-gradient(circle at 34% 28%,
+    color-mix(in srgb, var(--mood) 40%, #FFFFFF) 0%,
+    var(--mood) 62%,
+    color-mix(in srgb, var(--mood) 82%, #5B3F63) 100%);
+  box-shadow:
+    inset 0 -4px 8px rgba(91, 63, 99, 0.1),
+    0 6px 14px -8px rgba(91, 63, 99, 0.55);
+  transition: transform 0.28s var(--ease-soft), box-shadow 0.28s ease;
+}
 .mood__face {
   display: block;
-  width: min(54px, 100%);
-  height: auto;
-  border-radius: 50%;
-  transition: transform 0.2s var(--ease-soft), box-shadow 0.2s ease;
+  width: 100%;
+  height: 100%;
 }
-.face__head  { fill: var(--mood); }
-.face__cheek { fill: rgba(244, 143, 168, 0.35); }
+.face__cheek { fill: rgba(244, 143, 168, 0.42); }
 .face__eye   { fill: var(--text); }
 .face__line {
   fill: none;
@@ -1978,22 +2552,33 @@ input { font: inherit; color: inherit; }
   text-align: center;
 }
 
-.mood:hover .mood__face { transform: translateY(-2px); }
-.mood__input:checked ~ .mood__face {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 3px var(--card), 0 0 0 6px var(--button);
+.mood:hover .mood__blob { transform: translateY(-2px); }
+/* Chosen: grows a little and gets a soft glowing ring */
+.mood__input:checked ~ .mood__blob {
+  transform: scale(1.14);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 6px color-mix(in srgb, var(--mood) 70%, var(--button)),
+    0 0 22px 8px var(--mood);
 }
 .mood__input:checked ~ .mood__label {
   color: var(--text);
   font-weight: 700;
 }
-.mood__input:focus-visible ~ .mood__face {
+.mood__input:focus-visible ~ .mood__blob {
   outline: 3px solid var(--text);
-  outline-offset: 7px;
+  outline-offset: 8px;
 }
 
+/* The reply: a speech bubble whose tail points at the chosen mood */
 .mood-reply {
-  margin-top: 14px;
+  --tail: 50%;
+  position: relative;
+  margin-top: 20px;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 20px -12px rgba(91, 63, 99, 0.45);
   color: var(--text);
   font-family: var(--font-serif);
   font-style: italic;
@@ -2002,65 +2587,165 @@ input { font: inherit; color: inherit; }
   line-height: 1.5;
   text-align: center;
 }
+.mood-reply::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: var(--tail);
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 3px;
+  background: inherit;
+  transform: rotate(45deg);
+  transition: left 0.3s var(--ease-soft);
+}
 .mood-reply:empty { display: none; }
+.mood-reply.is-new { animation: bubble-in 0.4s var(--ease-soft); }
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+}
+/* Five columns: the tail sits under the chosen one */
+.card:has(.mood:nth-child(2) .mood__input:checked) .mood-reply { --tail: 10%; }
+.card:has(.mood:nth-child(3) .mood__input:checked) .mood-reply { --tail: 30%; }
+.card:has(.mood:nth-child(4) .mood__input:checked) .mood-reply { --tail: 50%; }
+.card:has(.mood:nth-child(5) .mood__input:checked) .mood-reply { --tail: 70%; }
+.card:has(.mood:nth-child(6) .mood__input:checked) .mood-reply { --tail: 90%; }
 
-/* ---- Your week: seven soft dots ---- */
-.week {
+/* ---- Your garden this week ---- */
+.garden-card__lead {
+  margin-top: 4px;
+  color: var(--text-soft);
+  font-size: 16px;
+}
+.garden { margin-top: 8px; }
+.garden__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.garden__hill { fill: url(#garden-hill); opacity: 0.85; }
+
+.garden__stem {
+  fill: none;
+  stroke: #7FAE8A;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;          /* pathLength=1, so it can "draw" itself up */
+}
+.garden__leaf { fill: #9CC8A5; }
+.garden__petal {
+  fill: var(--mood);
+  stroke: color-mix(in srgb, var(--mood) 72%, #5B3F63);
+  stroke-width: 0.6;
+}
+.garden__center {
+  fill: var(--sun-edge);
+  stroke: rgba(255, 255, 255, 0.8);
+  stroke-width: 1;
+}
+.garden__mound {
+  fill: none;
+  stroke: rgba(91, 63, 99, 0.22);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.garden__seed { fill: #B98A62; }
+.garden__seed-shine { fill: rgba(255, 255, 255, 0.75); }
+
+.garden__bloom,
+.garden__leaf,
+.garden__seed-group {
+  transform-box: fill-box;
+}
+.garden__bloom { transform-origin: center; }
+.garden__leaf  { transform-origin: 0% 100%; }
+
+/* Growing up: the stem draws itself, then the leaf and bloom open.
+   Each plant waits its turn (--d), left to right. */
+.garden-plant.is-growing .garden__stem {
+  animation: garden-stem 0.8s ease-out var(--d) both;
+}
+.garden-plant.is-growing .garden__leaf {
+  animation: garden-pop 0.5s var(--ease-soft) calc(var(--d) + 0.4s) both;
+}
+.garden-plant.is-growing .garden__bloom {
+  animation: garden-pop 0.6s var(--ease-soft) calc(var(--d) + 0.6s) both;
+}
+.garden-plant.is-growing .garden__seed-group {
+  animation: garden-seed 0.5s ease var(--d) both;
+}
+@keyframes garden-stem {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes garden-pop {
+  from { transform: scale(0); }
+  70%  { transform: scale(1.1); }
+  to   { transform: scale(1); }
+}
+@keyframes garden-seed {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+.garden__days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin: 16px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
-}
-.week__day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-/* No check-in: just a light outline, never a "bad" mark */
-.week__dot {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 2px dashed rgba(91, 63, 99, 0.2);
-}
-.week__day[data-mood] .week__dot {
-  border: 0;
-  background: var(--mood);
-  box-shadow: inset 0 -3px 6px rgba(91, 63, 99, 0.1), 0 4px 10px -6px rgba(91, 63, 99, 0.5);
-}
-.week__letter {
   color: var(--text-soft);
   font-size: 16px;
   font-weight: 600;
+  text-align: center;
 }
-.week__day.is-today .week__letter {
+.garden__day.is-today {
   color: var(--button);
   font-weight: 700;
 }
 
-/* ---- Little numbers ---- */
+/* ---- Little numbers: three tiles ---- */
 .numbers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin: 16px 0 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .numbers__item {
   display: flex;
-  flex-direction: column-reverse;   /* number on top, label under it */
+  flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 14px 6px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.55);
+  padding: 16px 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 22px;
+  background: var(--card);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(91, 63, 99, 0.06),
+    0 8px 20px -10px rgba(91, 63, 99, 0.25);
   text-align: center;
 }
+/* Hand-drawn feel: soft fill, round strokes, a little tilt */
+.numbers__icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  fill: color-mix(in srgb, var(--button) 18%, transparent);
+  stroke: var(--button);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: rotate(-6deg);
+}
+.numbers__item:nth-child(2) .numbers__icon { transform: rotate(4deg); }
+.numbers__icon-line { fill: none; }
 .numbers__value {
-  margin: 0;
-  color: var(--button);
   font-family: var(--font-serif);
   font-weight: 500;
   font-size: 32px;
@@ -2074,33 +2759,141 @@ input { font: inherit; color: inherit; }
   line-height: 1.25;
 }
 
-/* ---- Favorites (rows styled like the joy list) ---- */
+/* ---- Favorites: a swipeable row of pastel cards ---- */
+.favorites {
+  display: flex;
+  gap: 14px;
+  /* full-bleed: the row runs to the screen edges, the cards line up with the page */
+  margin: 0 -16px;
+  padding: 12px 16px 22px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  list-style: none;
+}
+.favorites::-webkit-scrollbar { display: none; }
 .favorites[hidden] { display: none; }
-.favorites__text--quote,
-.favorites__text--poem {
+
+.fav-card {
+  --tilt: -1.4deg;
+  position: relative;
+  flex: 0 0 78%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 170px;
+  padding: 24px 20px 18px;
+  border-radius: 22px;
+  background: var(--pastel);
+  box-shadow:
+    0 1px 2px rgba(91, 63, 99, 0.08),
+    0 12px 24px -14px rgba(91, 63, 99, 0.45);
+  transform: rotate(var(--tilt));
+  scroll-snap-align: center;
+}
+.fav-card:nth-child(even) { --tilt: 1.2deg; }
+.fav-card--0 { --pastel: #FDE2E7; }  /* pink */
+.fav-card--1 { --pastel: #FFF1C9; }  /* butter */
+.fav-card--2 { --pastel: #DDF0E2; }  /* mint */
+.fav-card--3 { --pastel: #E7E0F8; }  /* lavender */
+.fav-card--4 { --pastel: #FFE3D1; }  /* peach */
+
+.fav-card__text {
+  padding-right: 34px;             /* clear of the remove button */
   font-family: var(--font-serif);
   font-style: italic;
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
-.favorites__text--poem { white-space: pre-line; }   /* one line per poem line */
-.favorites__empty { margin-top: 12px; }
+.fav-card__text--poem { white-space: pre-line; }   /* one line per poem line */
+.fav-card__meta {
+  margin-top: 14px;
+  color: var(--text-soft);
+  font-size: 16px;
+  font-weight: 600;
+}
 
-/* ---- Settings ---- */
-.settings {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
+/* Remove, in the corner. Two taps: the first shows "Remove?" */
+.fav-card__remove {
+  appearance: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--text-soft);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-.settings li + li { border-top: 1px solid rgba(91, 63, 99, 0.1); }
+.fav-card__remove:hover { background: rgba(255, 255, 255, 0.9); color: var(--text); }
+.fav-card__remove svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+.fav-card__remove-text:empty { display: none; }
+.fav-card__remove.is-armed {
+  background: var(--button);
+  color: var(--on-button);
+}
+
+.favorites__empty {
+  padding: 22px 20px;
+  border-radius: 22px;
+  background: var(--card);
+  color: var(--text-soft);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  text-align: center;
+}
+.favorites__empty[hidden] { display: none; }
+
+/* ---- Settings: like a phone settings list ---- */
+.card.settings {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+.settings li { position: relative; }
+/* Thin separators, starting after the icons */
+.settings li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 66px;
+  right: 0;
+  height: 1px;
+  background: rgba(91, 63, 99, 0.1);
+}
 
 .settings__row {
   appearance: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  min-height: 56px;
-  padding: 8px 2px;
+  min-height: 60px;
+  padding: 10px 18px;
   border: 0;
   background: none;
   color: var(--text);
@@ -2112,11 +2905,40 @@ input { font: inherit; color: inherit; }
   cursor: pointer;
   touch-action: manipulation;
 }
-.settings__row:focus-visible { border-radius: 12px; }
-.settings__chevron {
-  color: var(--text-soft);
-  font-size: 26px;
-  line-height: 1;
+.settings__row:hover { background: rgba(255, 255, 255, 0.35); }
+.settings__row:focus-visible { outline-offset: -3px; border-radius: 16px; }
+
+.settings__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #FFFFFF;
+}
+.settings__icon--name  { background: #EE9BB4; }
+.settings__icon--sky   { background: #8EC0DE; }
+.settings__icon--sound { background: #EDBB5F; }
+.settings__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.settings__label { flex: 1; }
+.settings__chevron svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--text-soft);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* On/off switch; its state comes from aria-checked on the row */
@@ -2136,29 +2958,37 @@ input { font: inherit; color: inherit; }
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #fff;
+  background: #FFFFFF;
   box-shadow: 0 2px 6px rgba(91, 63, 99, 0.3);
   transition: transform 0.22s var(--ease-soft);
 }
 [aria-checked="true"] .switch { background: var(--button); }
 [aria-checked="true"] .switch__knob { transform: translateX(20px); }
 
-.reset {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(91, 63, 99, 0.1);
-}
-.reset__open[hidden] { display: none; }
-
-.reset__confirm {
-  width: 100%;
-  padding: 16px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.6);
+/* Reset everything, in its own card, in the accent color */
+.card.reset {
+  margin-top: 14px;
+  padding: 6px;
   text-align: center;
 }
+.reset__open {
+  appearance: none;
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: 22px;
+  background: none;
+  color: var(--button);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.reset__open:hover { background: rgba(255, 255, 255, 0.35); }
+.reset__open[hidden] { display: none; }
+
+.reset__confirm { padding: 14px 12px 10px; }
 .reset__confirm[hidden] { display: none; }
 .reset__question {
   font-size: 17px;
@@ -2179,15 +3009,45 @@ input { font: inherit; color: inherit; }
     radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--sun-core) 70%, transparent), transparent 70%),
     var(--card);
 }
-.support__icon {
+.support__art {
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 132px;
+  height: auto;
   margin: 0 auto 8px;
+  overflow: visible;
+}
+.support__rays path {
+  fill: none;
+  stroke: var(--sun-edge);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.support__sun-glow {
+  fill: color-mix(in srgb, var(--sun-core) 70%, transparent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: support-glow 5s ease-in-out infinite;
+}
+@keyframes support-glow {
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50%      { transform: scale(1.1); opacity: 1; }
+}
+.support__sun {
   fill: var(--sun-edge);
-  stroke: var(--button);
-  stroke-width: 1.8;
+  stroke: color-mix(in srgb, var(--button) 35%, var(--sun-edge));
+  stroke-width: 1;
+}
+.support__hand {
+  fill: #FBE3D3;
+  stroke: rgba(91, 63, 99, 0.4);
+  stroke-width: 1.4;
   stroke-linejoin: round;
+}
+.support__cuff {
+  fill: none;
+  stroke: rgba(91, 63, 99, 0.4);
+  stroke-width: 1.4;
+  stroke-linecap: round;
 }
 .support__title {
   margin: 0;
@@ -2208,9 +3068,16 @@ input { font: inherit; color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mood__face,
+  .mood__blob,
   .switch,
-  .switch__knob { transition: none; }
-  .mood:hover .mood__face,
-  .mood__input:checked ~ .mood__face { transform: none; }
+  .switch__knob,
+  .mood-reply::before { transition: none; }
+  .mood:hover .mood__blob,
+  .mood__input:checked ~ .mood__blob { transform: none; }
+  .mood-reply.is-new,
+  .garden-plant.is-growing .garden__stem,
+  .garden-plant.is-growing .garden__leaf,
+  .garden-plant.is-growing .garden__bloom,
+  .garden-plant.is-growing .garden__seed-group,
+  .support__sun-glow { animation: none; }
 }

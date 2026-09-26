@@ -1,9 +1,10 @@
 <!doctype html>
 <!--
   Little Sunshine: the "Joy Jar" page
-  Same sky, sun, and hills as the other pages. One small good thing a day
-  becomes a paper star in a glass jar. The fixed bottom navigation and the
-  toast are added by shared.js.
+  Same sky, sun, and hills as the other pages. One small good thing a day,
+  written on a paper note, folds into a star and flies into a glowing glass
+  jar full of fairy-light stars. Tap a star (or "Pick a memory") to read it
+  again. The fixed bottom navigation and the toast are added by shared.js.
 -->
 <html lang="en" data-sky="peach">
 <head>
@@ -17,7 +18,7 @@
   <!-- Tiny inline SVG sun as the favicon (no external image files) -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23FFD29A'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23FFF6D8'/%3E%3C/svg%3E">
 
-  <!-- Fonts: Fraunces for headings, Nunito for everything else -->
+  <!-- Fonts: Fraunces for headings and notes, Nunito for everything else -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Nunito:wght@400;600;700&display=swap">
@@ -60,60 +61,105 @@
 
     <main class="home-cards">
 
-      <!-- The jar (on the sky, no card) -->
+      <!-- ---------- The jar (on the sky, no card) ---------- -->
       <section class="jar" id="jar-section" aria-labelledby="jar-title">
         <h2 class="visually-hidden" id="jar-title">Your jar</h2>
 
-        <!-- joy.js keeps the label in step with the number of stars -->
-        <svg class="jar__svg" id="jar" viewBox="0 30 240 270" role="img" aria-label="An empty glass jar" focusable="false">
-          <defs>
-            <!-- The inside of the glass: stars are clipped to it -->
-            <clipPath id="jar-inside">
-              <path d="M88 66h64v10c0 7 5 11 13 15 22 11 37 29 37 56v108c0 15-11 25-26 25H64c-15 0-26-10-26-25V147c0-27 15-45 37-56 8-4 13-8 13-15z"/>
-            </clipPath>
-            <!-- One paper star, drawn around 0,0. Used by every star in the jar. -->
-            <path id="star-shape" d="M0-11 3.1-4.3 10.5-3.4 5-1.7 6.5 9 0 5.5-6.5 9-5 1.7-10.5-3.4-3.1-4.3z"/>
-          </defs>
+        <!-- joy.js sets --glow (brighter with more stars), .is-empty,
+             .is-flashing (a star landed) and .is-shaking (picking a memory) -->
+        <div class="jar__stage is-empty" id="jar-stage">
+          <div class="jar__glow" aria-hidden="true"></div>
 
-          <!-- Soft shadow the jar sits on -->
-          <ellipse class="jar__shadow" cx="120" cy="291" rx="84" ry="7"/>
+          <!-- joy.js keeps the label in step with the number of stars.
+               Stars are tap targets; the same memories are reachable by
+               keyboard through "Pick a memory" and "See all". -->
+          <svg class="jar__svg" id="jar" viewBox="0 18 240 284" role="img" aria-label="An empty glass jar" focusable="false">
+            <defs>
+              <!-- Glass: tinted with the sky, clearer in the middle -->
+              <linearGradient id="glass-fill" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0"    style="stop-color: var(--sky-top); stop-opacity: 0.55"/>
+                <stop offset="0.45" style="stop-color: #FFFFFF; stop-opacity: 0.16"/>
+                <stop offset="1"    style="stop-color: var(--sky-top); stop-opacity: 0.45"/>
+              </linearGradient>
+              <!-- Cork -->
+              <linearGradient id="cork-fill" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0"   stop-color="#C98F5E"/>
+                <stop offset="0.4" stop-color="#E2B386"/>
+                <stop offset="1"   stop-color="#B97E4E"/>
+              </linearGradient>
+              <!-- Fairy-light halo around each star -->
+              <radialGradient id="fairy-halo">
+                <stop offset="0"    style="stop-color: var(--sun-core); stop-opacity: 1"/>
+                <stop offset="0.4"  style="stop-color: var(--sun-edge); stop-opacity: 0.75"/>
+                <stop offset="1"    style="stop-color: var(--sun-edge); stop-opacity: 0"/>
+              </radialGradient>
+              <!-- The inside of the glass: stars are clipped to it -->
+              <clipPath id="jar-inside">
+                <path d="M88 66h64v10c0 7 5 11 13 15 22 11 37 29 37 56v108c0 15-11 25-26 25H64c-15 0-26-10-26-25V147c0-27 15-45 37-56 8-4 13-8 13-15z"/>
+              </clipPath>
+              <!-- One paper star, drawn around 0,0 -->
+              <path id="star-shape" d="M0-11 3.1-4.3 10.5-3.4 5-1.7 6.5 9 0 5.5-6.5 9-5 1.7-10.5-3.4-3.1-4.3z"/>
+            </defs>
 
-          <!-- Glass body -->
-          <path class="jar__glass" d="M86 62h68v12c0 7 5 11 13 15 23 11 39 30 39 58v108c0 17-12 29-29 29H63c-17 0-29-12-29-29V147c0-28 16-47 39-58 8-4 13-8 13-15z"/>
+            <!-- Soft shadow the jar sits on -->
+            <ellipse class="jar__shadow jar__deco" cx="120" cy="292" rx="88" ry="7"/>
 
-          <!-- Stars (filled by joy.js) -->
-          <g clip-path="url(#jar-inside)">
-            <g id="jar-stars"></g>
-          </g>
+            <!-- Glass body -->
+            <path class="jar__glass jar__deco" d="M86 62h68v12c0 7 5 11 13 15 23 11 39 30 39 58v108c0 17-12 29-29 29H63c-17 0-29-12-29-29V147c0-28 16-47 39-58 8-4 13-8 13-15z"/>
+            <!-- Thicker glass at the base -->
+            <path class="jar__base jar__deco" d="M50 268c14 9 126 9 140 0"/>
 
-          <!-- Light glass shine, over the stars -->
-          <path class="jar__shine" d="M56 150c0-16 7-29 20-38"/>
-          <path class="jar__shine jar__shine--soft" d="M52 176v70c0 8 4 14 11 17"/>
-          <path class="jar__shine jar__shine--dot" d="M186 168v22"/>
+            <!-- Stars (filled by joy.js), clipped to the inside of the glass -->
+            <g clip-path="url(#jar-inside)">
+              <g id="jar-stars"></g>
+            </g>
 
-          <!-- Lid with a small ribbon in the accent color -->
-          <g class="jar__lid" id="jar-lid">
-            <rect class="jar__lid-top" x="78" y="38" width="84" height="26" rx="8"/>
-            <path class="jar__lid-line" d="M86 47h68M86 55h68"/>
-            <rect class="jar__ribbon" x="78" y="64" width="84" height="7" rx="3.5"/>
-            <path class="jar__ribbon" d="M150 67c9-9 20-8 19-1-1 6-11 5-19 1zM150 67c10 1 17 9 11 13-5 3-9-4-11-13z"/>
-            <circle class="jar__ribbon" cx="150" cy="67" r="3.6"/>
-          </g>
-        </svg>
+            <!-- Empty jar: one faint sparkle -->
+            <path class="jar__sparkle jar__deco" d="M120 186c1.6 9 3.4 10.8 12 12.4-8.6 1.6-10.4 3.4-12 12.4-1.6-9-3.4-10.8-12-12.4 8.6-1.6 10.4-3.4 12-12.4z"/>
 
-        <!-- Shown only while the jar is empty -->
-        <p class="jar__empty" id="jar-empty" hidden>Your jar is waiting for its first star.</p>
+            <!-- Glass details, over the stars -->
+            <path class="jar__streak jar__deco" d="M50 158c0-18 8-32 22-42"/>
+            <path class="jar__streak jar__deco" d="M47 176v76c0 9 4 15 10 19"/>
+            <path class="jar__streak jar__streak--thin jar__deco" d="M60 170v62"/>
+            <path class="jar__reflection jar__deco" d="M192 166c2 26 2 58 0 84"/>
+
+            <!-- Rim, cork, and ribbon (the lid lifts a little when a star goes in or out) -->
+            <g class="jar__lid jar__deco" id="jar-lid">
+              <ellipse class="jar__rim" cx="120" cy="64" rx="36" ry="6"/>
+              <path class="jar__cork" d="M89 39h62l-3 26H92z"/>
+              <ellipse class="jar__cork-top" cx="120" cy="39" rx="31" ry="5.5"/>
+              <circle class="jar__cork-dot" cx="104" cy="50" r="1.3"/>
+              <circle class="jar__cork-dot" cx="131" cy="55" r="1.1"/>
+              <circle class="jar__cork-dot" cx="140" cy="47" r="1"/>
+              <rect class="jar__ribbon" x="86" y="68" width="68" height="7" rx="3.5"/>
+              <path class="jar__ribbon" d="M104 71c-9-9-21-8-20-1 1 6 12 5 20 1zM104 71c9-9 21-8 20-1-1 6-12 5-20 1z"/>
+              <path class="jar__ribbon" d="M102 73l-6 13 4-1 2 4 3-15zM106 73l3 14 2-4 4 1-6-12z"/>
+              <circle class="jar__ribbon jar__ribbon-knot" cx="104" cy="71" r="3.6"/>
+            </g>
+
+            <!-- A star rising out for "Pick a memory" (drawn over the cork) -->
+            <g id="jar-rise"></g>
+          </svg>
+        </div>
+
+        <!-- "12 happy moments saved", or the empty text -->
+        <p class="jar__count" id="jar-count" hidden></p>
+        <p class="jar__empty" id="jar-empty">Your jar is waiting for its first star.</p>
+
+        <div class="jar__pick" id="jar-pick-wrap" hidden>
+          <button class="btn btn--soft" type="button" id="memory-pick">Pick a memory</button>
+        </div>
       </section>
 
-      <!-- Write today's joy -->
-      <section class="card home-card" aria-labelledby="joy-form-title">
-        <h2 class="home-card__title" id="joy-form-title">Today's good thing</h2>
-
+      <!-- ---------- Write today's joy: a small paper note ---------- -->
+      <section class="joy-write" aria-labelledby="joy-form-title">
         <form class="joy-form" id="joy-form" novalidate>
-          <label class="visually-hidden" for="joy-input">One small good thing from today</label>
-          <textarea class="joy-input" id="joy-input" rows="3" maxlength="140"
-                    placeholder="Something that made you smile..."
-                    aria-describedby="joy-count joy-hint"></textarea>
+          <div class="note" id="joy-note">
+            <label class="note__title" id="joy-form-title" for="joy-input">Today's good thing</label>
+            <textarea class="note__input" id="joy-input" rows="3" maxlength="140"
+                      placeholder="Something that made you smile..."
+                      aria-describedby="joy-count joy-hint"></textarea>
+          </div>
 
           <div class="joy-form__meta">
             <!-- Only shows a message when "Add" is pressed with nothing written -->
@@ -121,33 +167,45 @@
             <p class="joy-count" id="joy-count">0 / 140</p>
           </div>
 
-          <button class="btn btn--primary" type="submit">Add to my jar</button>
+          <button class="btn btn--primary" type="submit" id="joy-add">Add to my jar</button>
         </form>
       </section>
 
-      <!-- Pick a memory (hidden until there's at least one joy) -->
-      <section class="joy-memories" id="joy-memories" aria-label="Memories" hidden>
-        <button class="btn btn--soft" type="button" id="memory-pick">Pick a memory</button>
-
-        <!-- A glass card with one past joy. aria-live so a new pick is read out. -->
-        <figure class="card memory" id="memory" aria-live="polite" hidden>
-          <figcaption class="memory__date" id="memory-date"></figcaption>
-          <blockquote class="memory__text" id="memory-text"></blockquote>
-        </figure>
-
-        <div class="joy-all">
+      <!-- ---------- See all ---------- -->
+      <section class="joy-all" id="joy-all" aria-label="All your joys" hidden>
+        <div class="joy-all__toggle">
           <button class="btn btn--link" type="button" id="list-toggle"
                   aria-expanded="false" aria-controls="joy-list-card">See all</button>
         </div>
 
-        <!-- All joys, newest first -->
+        <!-- Grouped by month, newest first; each joy is a small paper note -->
         <div class="card joy-list-card" id="joy-list-card" hidden>
           <h2 class="home-card__title">Everything in your jar</h2>
-          <ul class="joy-list" id="joy-list"></ul>
+          <div class="note-groups" id="joy-list"></div>
         </div>
       </section>
     </main>
   </div>
+
+  <!-- ============ A memory, as a small letter ============
+       Native <dialog>: traps focus, Esc closes, and ::backdrop blurs the page.
+       Tapping outside the letter closes it too. -->
+  <dialog class="memory" id="memory" aria-labelledby="memory-intro">
+    <!-- The letter takes focus when it opens (quietly, no ring), so a tap
+         doesn't light up the Close button -->
+    <article class="letter" id="letter" tabindex="-1" autofocus>
+      <!-- Date stamp (the same date is in the intro line, so it's hidden from screen readers) -->
+      <div class="letter__stamp" aria-hidden="true">
+        <span class="letter__stamp-day" id="stamp-day"></span>
+        <span class="letter__stamp-month" id="stamp-month"></span>
+      </div>
+      <p class="letter__intro" id="memory-intro"></p>
+      <p class="letter__text" id="memory-text"></p>
+      <div class="letter__actions">
+        <button class="btn btn--link" type="button" id="memory-close">Close</button>
+      </div>
+    </article>
+  </dialog>
 
 </body>
 </html>

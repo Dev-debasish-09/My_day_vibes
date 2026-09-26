@@ -81,7 +81,7 @@
   // nav, main buttons, hearts, the smile sun, check-ins and choices
   const HAPTIC_TAPS = [
     '.tab', '.btn--primary', '.icon-btn--heart', '.smile__sun',
-    '.kindness__input', '.mood__input', '.pill__input', '#breath-stop',
+    '.kindness__input', '.mood__input', '.pill__input', '.pattern__input', '#breath-stop',
   ].join(', ');
 
   const root = document.documentElement;
@@ -300,6 +300,8 @@
      ------------------------------------------------------------------- */
   function haptic() {
     try {
+      // Only during a real tap: browsers block (and warn about) vibration otherwise
+      if (navigator.userActivation && !navigator.userActivation.isActive) return;
       if (typeof navigator.vibrate === 'function') navigator.vibrate(10);
     } catch (err) { /* no vibration here: nothing to do */ }
   }

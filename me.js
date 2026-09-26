@@ -1,7 +1,8 @@
 /* =====================================================================
    Little Sunshine: me.js (the "Me" page)
-   Your name and joined date, a daily mood check-in, your week in mood
-   dots, a few gentle numbers, saved favorites (with remove), settings
+   Your name and joined date on a little sky card, a daily mood check-in,
+   your garden this week (each day's mood grows a flower), a few gentle
+   numbers, saved favorites as a swipeable row (with remove), settings
    (sounds, reset everything), and a support card (static, in me.html).
    The profile, sky, sounds, toast, and bottom navigation come from
    shared.js (window.LittleSunshine).
@@ -25,17 +26,28 @@
   const FAVORITES_KEY = 'littleSunshine:favorites'; // written by home.js
   const KINDNESS_KEY = 'littleSunshine:kindness';   // written by home.js
   const JOYS_KEY = 'littleSunshine:joys';           // written by joy.js
+  const BREATHS_KEY = 'littleSunshine:breaths';     // written by breathe.js
 
-  // Low moods get comfort, never forced cheer
+  // Low moods get comfort, never forced cheer.
+  // In the garden, a better mood means more petals and a taller stem.
   const MOODS = {
-    'very-low': { label: 'Very low', reply: 'Thank you for telling me. Hard days are allowed. Be as gentle with yourself as you can.' },
-    'low':      { label: 'Low',      reply: "That sounds heavy. You don't have to fix anything right now. I'm glad you're here." },
-    'okay':     { label: 'Okay',     reply: 'Okay is a perfectly good place to be.' },
-    'good':     { label: 'Good',     reply: "I'm really glad. Keep a little of that for later." },
-    'great':    { label: 'Great',    reply: 'That makes me so happy. Maybe it deserves a star in your joy jar?' },
+    'very-low': { label: 'Very low', petals: 3, stem: 34, size: 0.8,
+      reply: 'Thank you for telling me. Hard days are allowed. Be as gentle with yourself as you can.' },
+    'low':      { label: 'Low',      petals: 4, stem: 42, size: 0.88,
+      reply: "That sounds heavy. You don't have to fix anything right now. I'm glad you're here." },
+    'okay':     { label: 'Okay',     petals: 5, stem: 52, size: 0.95,
+      reply: 'Okay is a perfectly good place to be.' },
+    'good':     { label: 'Good',     petals: 6, stem: 62, size: 1,
+      reply: "I'm really glad. Keep a little of that for later." },
+    'great':    { label: 'Great',    petals: 8, stem: 72, size: 1.08,
+      reply: 'That makes me so happy. Maybe it deserves a star in your joy jar?' },
   };
 
+  // The garden's hill (see me.html): a curve from (0,146) over (175,104) to (350,146)
+  const GARDEN = { width: 350, days: 7, edge: 146, peak: 104 };
+
   const DAY_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
   const root = document.documentElement;
 
 
@@ -92,6 +104,11 @@
       : 0;
   }
 
+  function countBreaths() {
+    const n = Number(readJson(BREATHS_KEY));
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  }
+
 
   /* -------------------------------------------------------------------
      Small helpers
@@ -120,6 +137,25 @@
     return (Date.parse(b.savedAt) || 0) - (Date.parse(a.savedAt) || 0);
   }
 
+  // Height of the garden's hill at x (the quadratic curve in me.html)
+  function hillY(x) {
+    const t = x / GARDEN.width;
+    return (1 - t) * (1 - t) * GARDEN.edge + 2 * t * (1 - t) * GARDEN.peak + t * t * GARDEN.edge;
+  }
+
+  // Restart a CSS animation class, even if it's already on the element
+  function replayClass(el, className) {
+    el.classList.remove(className);
+    void el.getBoundingClientRect(); // force a reflow so the animation starts again
+    el.classList.add(className);
+  }
+
+  function svgEl(name, attrs) {
+    const el = document.createElementNS(SVG_NS, name);
+    Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]));
+    return el;
+  }
+
 
   /* -------------------------------------------------------------------
      Run immediately (shared.js has already sent visitors with no
@@ -129,7 +165,7 @@
   if (!profile) return;
 
   applySky(profile.sky);
-  root.style.setProperty('--sun-rise', '1'); // sun high in the sky
+  root.style.setProperty('--sun-rise', '0'); // the page's sun rests; the sky card has its own
 
 
   /* -------------------------------------------------------------------
@@ -142,10 +178,11 @@
       since: $('me-since'),
       moods: $('moods'),
       reply: $('mood-reply'),
-      week: $('week'),
-      countKindness: $('count-kindness'),
+      plants: $('garden-plants'),
+      days: $('garden-days'),
       countJoys: $('count-joys'),
-      countFavorites: $('count-favorites'),
+      countKindness: $('count-kindness'),
+      countBreaths: $('count-breaths'),
       favorites: $('favorites'),
       favoritesEmpty: $('favorites-empty'),
       sound: $('sound-toggle'),
@@ -181,61 +218,121 @@
         showToast("I couldn't save that on this device, sorry.");
       }
       showMood(mood);
-      renderWeek(moods);
+      replayClass(els.reply, 'is-new');
+      renderGarden(moods, todayKey()); // only today's flower grows again
     }
 
 
-    /* ---------------- Your week ---------------- */
-    function renderWeek(moods) {
+    /* ---------------- Your garden this week ---------------- */
+    // A flower: a stem, a leaf for okay and up, and a bloom whose petal
+    // count and size follow the mood
+    function createFlower(x, base, mood) {
+      const m = MOODS[mood];
+      const top = base - m.stem;
+      const group = svgEl('g', { class: 'garden__plant-body' });
+
+      group.appendChild(svgEl('path', {
+        class: 'garden__stem',
+        d: `M${x} ${base} Q${x - 5} ${base - m.stem / 2} ${x} ${top}`,
+        pathLength: 1,
+      }));
+
+      if (m.petals >= 5) {
+        const y = base - m.stem * 0.42;
+        group.appendChild(svgEl('path', {
+          class: 'garden__leaf',
+          d: `M${x - 2} ${y}q8-9 17-5q-7 9-17 5z`,
+        }));
+      }
+
+      // The outer <g> places the bloom; the inner one is what grows (a CSS
+      // animation on the outer one would replace its position)
+      const place = svgEl('g', { transform: `translate(${x} ${top})` });
+      const bloom = svgEl('g', { class: 'garden__bloom' });
+      const s = m.size;
+      for (let k = 0; k < m.petals; k++) {
+        bloom.appendChild(svgEl('ellipse', {
+          class: 'garden__petal',
+          cx: 0, cy: (-7 * s).toFixed(1), rx: (5 * s).toFixed(1), ry: (8.5 * s).toFixed(1),
+          transform: `rotate(${(k * 360) / m.petals})`,
+        }));
+      }
+      bloom.appendChild(svgEl('circle', { class: 'garden__center', r: (4.2 * s).toFixed(1) }));
+      place.appendChild(bloom);
+      group.appendChild(place);
+      return group;
+    }
+
+    // No mood that day: a small seed resting in the ground (never anything sad)
+    function createSeed(x, base) {
+      const group = svgEl('g', { class: 'garden__seed-group' });
+      group.append(
+        svgEl('path', { class: 'garden__mound', d: `M${x - 9} ${base + 1}q9-6 18 0` }),
+        svgEl('ellipse', { class: 'garden__seed', cx: x, cy: base - 1, rx: 4.2, ry: 3, transform: `rotate(-18 ${x} ${base - 1})` }),
+        svgEl('circle', { class: 'garden__seed-shine', cx: x - 1.4, cy: base - 2, r: 0.9 })
+      );
+      return group;
+    }
+
+    // `grow`: "all" (the page just opened), a day key (only that day), or nothing
+    function renderGarden(moods, grow) {
       const today = todayKey();
-      els.week.replaceChildren(...lastSevenDays().map((date) => {
+      const colWidth = GARDEN.width / GARDEN.days;
+
+      const plants = [];
+      const days = [];
+      lastSevenDays().forEach((date, i) => {
         const key = todayKey(date);
         const mood = moods[key];
+        const x = colWidth * i + colWidth / 2;
+        const base = hillY(x) + 2;
+
+        const plant = svgEl('g', { class: 'garden-plant' });
+        plant.style.setProperty('--d', (i * 90) + 'ms');
+        if (mood) plant.setAttribute('data-mood', mood);
+        if (grow === 'all' || grow === key) plant.classList.add('is-growing');
+        if (grow === key) plant.style.setProperty('--d', '0ms');
+        plant.appendChild(mood ? createFlower(x, base, mood) : createSeed(x, base));
+        plants.push(plant);
+
+        // Day letter, and what screen readers hear
         const dayName = date.toLocaleDateString('en-GB', { weekday: 'long' });
-
         const item = document.createElement('li');
-        item.className = 'week__day' + (key === today ? ' is-today' : '');
-        if (mood) item.dataset.mood = mood;
-
-        const dot = document.createElement('span');
-        dot.className = 'week__dot';
-        dot.setAttribute('aria-hidden', 'true');
-
+        item.className = 'garden__day' + (key === today ? ' is-today' : '');
         const letter = document.createElement('span');
-        letter.className = 'week__letter';
         letter.setAttribute('aria-hidden', 'true');
         letter.textContent = dayName.charAt(0);
-
-        // Read out as "Monday: good" or "Monday: no check-in"
         const spoken = document.createElement('span');
         spoken.className = 'visually-hidden';
         spoken.textContent = (key === today ? 'Today' : dayName) + ': ' +
-          (mood ? MOODS[mood].label.toLowerCase() : 'no check-in');
+          (mood ? MOODS[mood].label.toLowerCase() + ' flower' : 'a seed, no check-in');
+        item.append(letter, spoken);
+        days.push(item);
+      });
 
-        item.append(dot, letter, spoken);
-        return item;
-      }));
+      els.plants.replaceChildren(...plants);
+      els.days.replaceChildren(...days);
     }
 
 
     /* ---------------- Little numbers ---------------- */
     function renderNumbers() {
-      els.countKindness.textContent = countKindness();
       els.countJoys.textContent = countJoys();
-      els.countFavorites.textContent = loadFavorites().length;
+      els.countKindness.textContent = countKindness();
+      els.countBreaths.textContent = countBreaths();
     }
 
 
-    /* ---------------- Favorites ---------------- */
-    // Removing takes two taps: the first turns the button into "Remove?"
+    /* ---------------- Favorites: a swipeable row of cards ---------------- */
+    // Removing takes two taps: the first turns the corner button into "Remove?"
     function armRemove(button) {
       if (button.classList.contains('is-armed')) return true;
       button.classList.add('is-armed');
-      button.textContent = 'Remove?';
+      button.querySelector('.fav-card__remove-text').textContent = 'Remove?';
       setTimeout(() => {
         if (!button.isConnected) return;
         button.classList.remove('is-armed');
-        button.textContent = 'Remove';
+        button.querySelector('.fav-card__remove-text').textContent = '';
       }, 3000);
       return false;
     }
@@ -249,45 +346,42 @@
         return;
       }
       renderFavorites();
-      renderNumbers();
       showToast('Removed from your favorites.');
-      // Keep keyboard focus in the card, not lost at the top of the page
-      const first = els.favorites.querySelector('.joy-list__delete');
+      // Keep keyboard focus in the row, not lost at the top of the page
+      const first = els.favorites.querySelector('.fav-card__remove');
       (first || $('favorites-title')).focus();
+    }
+
+    function createFavoriteCard(fav, index) {
+      const card = document.createElement('li');
+      card.className = 'fav-card fav-card--' + (index % 5);
+
+      const text = document.createElement('p');
+      text.className = 'fav-card__text fav-card__text--' + fav.type;
+      text.textContent = fav.text; // poems keep their line breaks (CSS pre-line)
+
+      const meta = document.createElement('p');
+      meta.className = 'fav-card__meta';
+      meta.textContent = fav.type === 'poem' ? 'Poem' : (fav.author ? '— ' + fav.author : 'Quote');
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'fav-card__remove';
+      remove.setAttribute('aria-label', 'Remove from favorites: ' + fav.text.split('\n')[0]);
+      remove.innerHTML =
+        '<span class="fav-card__remove-text"></span>' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+      remove.addEventListener('click', () => removeFavorite(fav, remove));
+
+      card.append(remove, text, meta);
+      return card;
     }
 
     function renderFavorites() {
       const favorites = loadFavorites().sort(bySavedAtDesc);
       els.favoritesEmpty.hidden = favorites.length > 0;
       els.favorites.hidden = favorites.length === 0;
-
-      els.favorites.replaceChildren(...favorites.map((fav) => {
-        const item = document.createElement('li');
-        item.className = 'joy-list__item';
-
-        const words = document.createElement('div');
-        words.className = 'joy-list__words';
-
-        const text = document.createElement('p');
-        text.className = 'joy-list__text favorites__text favorites__text--' + fav.type;
-        text.textContent = fav.text; // poems keep their line breaks (CSS pre-line)
-
-        const meta = document.createElement('p');
-        meta.className = 'joy-list__date';
-        meta.textContent = fav.type === 'poem' ? 'Poem' : (fav.author ? '— ' + fav.author : 'Quote');
-
-        words.append(text, meta);
-
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'joy-list__delete';
-        remove.textContent = 'Remove';
-        remove.setAttribute('aria-label', 'Remove from favorites: ' + fav.text.split('\n')[0]);
-        remove.addEventListener('click', () => removeFavorite(fav, remove));
-
-        item.append(words, remove);
-        return item;
-      }));
+      els.favorites.replaceChildren(...favorites.map(createFavoriteCard));
     }
 
 
@@ -330,7 +424,7 @@
 
     const moods = loadMoods();
     showMood(moods[todayKey()] || null);
-    renderWeek(moods);
+    renderGarden(moods, 'all'); // the flowers grow up as the page opens
     renderNumbers();
     renderFavorites();
     showSound(loadSoundOn());

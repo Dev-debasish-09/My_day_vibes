@@ -1,10 +1,10 @@
 <!doctype html>
 <!--
   Little Sunshine: the "Me" page
-  Same sky, sun, and hills as the other pages. Your name, a daily mood
-  check-in, your week, a few gentle numbers, your favorites, settings, and
-  a quiet support card. The fixed bottom navigation and the toast are
-  added by shared.js.
+  Same sky and hills as the other pages. A little sky card with your name,
+  a daily mood check-in, your garden (each day's mood grows a flower), a few
+  gentle numbers, your favorites, settings, and a quiet support card.
+  The fixed bottom navigation and the toast are added by shared.js.
 -->
 <html lang="en" data-sky="peach">
 <head>
@@ -37,6 +37,7 @@
   <div class="scene" aria-hidden="true">
     <div class="sky"></div>
 
+    <!-- On this page the sun rests behind the hills: the sky card has its own -->
     <div class="sun">
       <div class="sun__glow"></div>
       <div class="sun__core"></div>
@@ -50,26 +51,37 @@
     </svg>
   </div>
 
-  <!-- The face shapes every mood button reuses (the mouth is drawn per mood) -->
+  <!-- Face parts every mood face reuses (the mouth is drawn per mood) -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-    <symbol id="face-base" viewBox="0 0 100 100">
-      <circle class="face__head" cx="50" cy="50" r="44"/>
+    <symbol id="face-cheeks" viewBox="0 0 100 100">
       <circle class="face__cheek" cx="27" cy="60" r="7"/>
       <circle class="face__cheek" cx="73" cy="60" r="7"/>
     </symbol>
     <symbol id="face-eyes" viewBox="0 0 100 100">
-      <circle class="face__eye" cx="36" cy="44" r="4.5"/>
-      <circle class="face__eye" cx="64" cy="44" r="4.5"/>
+      <circle class="face__eye" cx="36" cy="45" r="4.5"/>
+      <circle class="face__eye" cx="64" cy="45" r="4.5"/>
     </symbol>
   </svg>
 
   <!-- ============ Page content (scrolls over the fixed scene) ============ -->
   <div class="home">
 
-    <header class="home-header">
-      <p class="page-eyebrow">Hello again,</p>
-      <h1 class="page-title" id="me-name">friend</h1>
-      <p class="page-lead" id="me-since"></p>
+    <!-- ---------- Profile: a little sky card, like the welcome screen ---------- -->
+    <header class="profile">
+      <div class="profile__sky" aria-hidden="true">
+        <div class="profile__sun"></div>
+        <svg class="profile__hill profile__hill--back" viewBox="0 0 400 120" preserveAspectRatio="none" focusable="false">
+          <path d="M0 52 C70 22 140 18 210 40 C280 62 340 30 400 36 V120 H0 Z"/>
+        </svg>
+        <svg class="profile__hill profile__hill--front" viewBox="0 0 400 120" preserveAspectRatio="none" focusable="false">
+          <path d="M0 74 C90 44 160 52 230 72 C300 92 350 62 400 56 V120 H0 Z"/>
+        </svg>
+      </div>
+      <div class="profile__text">
+        <p class="page-eyebrow">Hello again,</p>
+        <h1 class="page-title" id="me-name">friend</h1>
+        <p class="page-lead profile__since" id="me-since"></p>
+      </div>
     </header>
 
     <main class="home-cards">
@@ -84,123 +96,174 @@
 
           <label class="mood" data-mood="very-low">
             <input class="mood__input" type="radio" name="mood" value="very-low">
-            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-              <use href="#face-base"/>
-              <use href="#face-eyes"/>
-              <path class="face__line" d="M34 42l8 3M66 42l-8 3"/>
-              <path class="face__line" d="M36 72c7-9 21-9 28 0"/>
-            </svg>
+            <span class="mood__blob" aria-hidden="true">
+              <svg class="mood__face" viewBox="0 0 100 100" focusable="false">
+                <use href="#face-cheeks"/>
+                <use href="#face-eyes"/>
+                <path class="face__line" d="M30 38l10-4M70 38l-10-4"/>
+                <path class="face__line" d="M37 70c7-8 19-8 26 0"/>
+              </svg>
+            </span>
             <span class="mood__label">Very low</span>
           </label>
 
           <label class="mood" data-mood="low">
             <input class="mood__input" type="radio" name="mood" value="low">
-            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-              <use href="#face-base"/>
-              <use href="#face-eyes"/>
-              <path class="face__line" d="M38 70c6-5 18-5 24 0"/>
-            </svg>
+            <span class="mood__blob" aria-hidden="true">
+              <svg class="mood__face" viewBox="0 0 100 100" focusable="false">
+                <use href="#face-cheeks"/>
+                <use href="#face-eyes"/>
+                <path class="face__line" d="M39 68c6-4 16-4 22 0"/>
+              </svg>
+            </span>
             <span class="mood__label">Low</span>
           </label>
 
           <label class="mood" data-mood="okay">
             <input class="mood__input" type="radio" name="mood" value="okay">
-            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-              <use href="#face-base"/>
-              <use href="#face-eyes"/>
-              <path class="face__line" d="M38 67h24"/>
-            </svg>
+            <span class="mood__blob" aria-hidden="true">
+              <svg class="mood__face" viewBox="0 0 100 100" focusable="false">
+                <use href="#face-cheeks"/>
+                <use href="#face-eyes"/>
+                <path class="face__line" d="M39 66h22"/>
+              </svg>
+            </span>
             <span class="mood__label">Okay</span>
           </label>
 
           <label class="mood" data-mood="good">
             <input class="mood__input" type="radio" name="mood" value="good">
-            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-              <use href="#face-base"/>
-              <use href="#face-eyes"/>
-              <path class="face__line" d="M37 64c7 7 19 7 26 0"/>
-            </svg>
+            <span class="mood__blob" aria-hidden="true">
+              <svg class="mood__face" viewBox="0 0 100 100" focusable="false">
+                <use href="#face-cheeks"/>
+                <use href="#face-eyes"/>
+                <path class="face__line" d="M37 62c7 7 19 7 26 0"/>
+              </svg>
+            </span>
             <span class="mood__label">Good</span>
           </label>
 
           <label class="mood" data-mood="great">
             <input class="mood__input" type="radio" name="mood" value="great">
-            <svg class="mood__face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-              <use href="#face-base"/>
-              <path class="face__line" d="M30 43c3-5 9-5 12 0M58 43c3-5 9-5 12 0"/>
-              <path class="face__mouth" d="M34 60h32c0 10-7 16-16 16s-16-6-16-16z"/>
-            </svg>
+            <span class="mood__blob" aria-hidden="true">
+              <svg class="mood__face" viewBox="0 0 100 100" focusable="false">
+                <use href="#face-cheeks"/>
+                <path class="face__line" d="M30 45c3-5 9-5 12 0M58 45c3-5 9-5 12 0"/>
+                <path class="face__mouth" d="M35 59h30c0 10-7 16-15 16s-15-6-15-16z"/>
+              </svg>
+            </span>
             <span class="mood__label">Great</span>
           </label>
         </fieldset>
 
-        <!-- A gentle reply that matches the mood -->
+        <!-- A gentle reply that matches the mood, in a speech bubble -->
         <p class="mood-reply" id="mood-reply" aria-live="polite"></p>
       </section>
 
-      <!-- ---------- Your week ---------- -->
-      <section class="card home-card" aria-labelledby="week-title">
-        <h2 class="home-card__title" id="week-title">Your week</h2>
-        <!-- Filled by me.js: 7 days, oldest on the left, today on the right -->
-        <ol class="week" id="week"></ol>
+      <!-- ---------- Your garden this week ---------- -->
+      <section class="card home-card garden-card" aria-labelledby="garden-title">
+        <h2 class="home-card__title" id="garden-title">Your garden this week</h2>
+        <p class="garden-card__lead">Every check-in grows a little flower.</p>
+
+        <div class="garden">
+          <!-- Filled by me.js: a flower for each day with a mood, a seed for the rest -->
+          <svg class="garden__svg" id="garden" viewBox="0 26 350 124" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="garden-hill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" style="stop-color: var(--hill-back)"/>
+                <stop offset="1" style="stop-color: var(--hill-front)"/>
+              </linearGradient>
+            </defs>
+            <path class="garden__hill" d="M0 146 Q175 104 350 146 V150 H0 Z"/>
+            <g id="garden-plants"></g>
+          </svg>
+          <!-- Day letters under each plant; screen readers hear "Monday: good" etc. -->
+          <ol class="garden__days" id="garden-days"></ol>
+        </div>
       </section>
 
       <!-- ---------- Little numbers ---------- -->
-      <section class="card home-card" aria-labelledby="numbers-title">
-        <h2 class="home-card__title" id="numbers-title">Little numbers</h2>
-        <dl class="numbers">
-          <div class="numbers__item">
-            <dt class="numbers__label">kind things done</dt>
-            <dd class="numbers__value" id="count-kindness">0</dd>
-          </div>
-          <div class="numbers__item">
-            <dt class="numbers__label">stars in your jar</dt>
-            <dd class="numbers__value" id="count-joys">0</dd>
-          </div>
-          <div class="numbers__item">
-            <dt class="numbers__label">favorites saved</dt>
-            <dd class="numbers__value" id="count-favorites">0</dd>
-          </div>
-        </dl>
+      <section class="numbers-section" aria-labelledby="numbers-title">
+        <h2 class="home-card__title section-title" id="numbers-title">Little numbers</h2>
+        <!-- Each tile reads as "12 stars in your jar" -->
+        <ul class="numbers">
+          <li class="numbers__item">
+            <svg class="numbers__icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+              <path d="M20 5.5c1.6 4.2 3 7.6 4.6 9.3 4.3.4 7.6.5 10.1 1.2-3.1 2.6-5.8 4.6-7.6 6.5.9 4.2 1.6 7.4 2.1 10.2-3.6-2.1-6.6-3.9-9.3-5.1-2.6 1.4-5.6 3.3-9.2 5.4.6-3.1 1.3-6.4 2.1-10.3-2.3-2-4.8-4-7.5-6.6 3.4-.5 6.8-.8 10.2-1.1C17 11.9 18.4 8.9 20 5.5z"/>
+            </svg>
+            <p class="numbers__value" id="count-joys">0</p>
+            <p class="numbers__label">stars in your jar</p>
+          </li>
+          <li class="numbers__item">
+            <svg class="numbers__icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+              <path d="M20.3 33.5C13 28.6 6.2 23.2 6.5 15.7c.2-4.6 3.6-8 7.8-7.8 2.8.1 4.8 1.9 5.9 4.3 1.2-2.6 3.4-4.5 6.3-4.4 4.3.2 7.3 3.8 7 8.1-.5 7.1-7 12.4-13.2 17.6z"/>
+            </svg>
+            <p class="numbers__value" id="count-kindness">0</p>
+            <p class="numbers__label">kind things done</p>
+          </li>
+          <li class="numbers__item">
+            <svg class="numbers__icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+              <path d="M8.5 31.8C7.6 19.4 14.4 9.6 32.2 7.6c1.3 12.6-6.4 23.9-20.6 23.2"/>
+              <path class="numbers__icon-line" d="M8.2 32.6c4.8-7.2 10.4-13.3 17.6-18.4"/>
+            </svg>
+            <p class="numbers__value" id="count-breaths">0</p>
+            <p class="numbers__label">breaths taken</p>
+          </li>
+        </ul>
       </section>
 
-      <!-- ---------- Favorites ---------- -->
-      <section class="card home-card" aria-labelledby="favorites-title">
+      <!-- ---------- Favorites: a swipeable row of pastel cards ---------- -->
+      <section class="favorites-section" aria-labelledby="favorites-title">
         <!-- tabindex=-1: focus lands here after the last favorite is removed -->
-        <h2 class="home-card__title" id="favorites-title" tabindex="-1">Favorites</h2>
-        <ul class="joy-list favorites" id="favorites"></ul>
-        <p class="card-fallback favorites__empty" id="favorites-empty" hidden>Tap the heart on a quote or poem to keep it here.</p>
+        <h2 class="home-card__title section-title" id="favorites-title" tabindex="-1">Favorites</h2>
+        <ul class="favorites" id="favorites"></ul>
+        <p class="favorites__empty" id="favorites-empty" hidden>Tap the heart on a quote or poem to keep it here.</p>
       </section>
 
-      <!-- ---------- Settings ---------- -->
-      <section class="card home-card" aria-labelledby="settings-title">
-        <h2 class="home-card__title" id="settings-title">Settings</h2>
+      <!-- ---------- Settings: like a phone settings list ---------- -->
+      <section class="settings-section" aria-labelledby="settings-title">
+        <h2 class="home-card__title section-title" id="settings-title">Settings</h2>
 
-        <ul class="settings">
+        <ul class="card settings">
           <li>
             <!-- "#edit" opens the name screen on the welcome page -->
             <a class="settings__row" href="./#edit">
-              <span>Change name</span>
-              <span class="settings__chevron" aria-hidden="true">›</span>
+              <span class="settings__icon settings__icon--name" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M5 18.5l.8-3.6L15.7 5a1.9 1.9 0 0 1 2.7 0l.6.6a1.9 1.9 0 0 1 0 2.7l-9.9 9.9z"/><path d="M13.5 7.2l3.3 3.3"/></svg>
+              </span>
+              <span class="settings__label">Change name</span>
+              <span class="settings__chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 6l6 6-6 6"/></svg>
+              </span>
             </a>
           </li>
           <li>
             <!-- "#sky" opens the sky picker on the welcome page -->
             <a class="settings__row" href="./#sky">
-              <span>Change sky</span>
-              <span class="settings__chevron" aria-hidden="true">›</span>
+              <span class="settings__icon settings__icon--sky" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="11" r="3.6"/><path d="M12 3.8v1.4M12 16.8v1.4M4.8 11h1.4M17.8 11h1.4M6.9 5.9l1 1M16.1 15.1l1 1M6.9 16.1l1-1M16.1 6.9l1-1M4 20.5h16"/></svg>
+              </span>
+              <span class="settings__label">Change sky</span>
+              <span class="settings__chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 6l6 6-6 6"/></svg>
+              </span>
             </a>
           </li>
           <li>
+            <!-- A switch, so it gets an on/off toggle instead of a chevron -->
             <button class="settings__row" type="button" id="sound-toggle" role="switch" aria-checked="false">
-              <span>Sounds</span>
+              <span class="settings__icon settings__icon--sound" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M9 17.5V6.2l10-2v11.3"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg>
+              </span>
+              <span class="settings__label">Sounds</span>
               <span class="switch" aria-hidden="true"><span class="switch__knob"></span></span>
             </button>
           </li>
         </ul>
 
-        <div class="reset">
-          <button class="btn btn--link reset__open" type="button" id="reset-open"
+        <!-- Reset everything, in its own card -->
+        <div class="card reset">
+          <button class="reset__open" type="button" id="reset-open"
                   aria-expanded="false" aria-controls="reset-confirm">Reset everything</button>
 
           <!-- The confirmation step -->
@@ -216,8 +279,17 @@
 
       <!-- ---------- Support ---------- -->
       <section class="card home-card support" aria-labelledby="support-title">
-        <svg class="support__icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-          <path d="M24 40s-14-8.4-14-18.6A7.6 7.6 0 0 1 24 16.6a7.6 7.6 0 0 1 14 4.8C38 31.6 24 40 24 40z"/>
+        <!-- Two hands holding a tiny sun -->
+        <svg class="support__art" viewBox="0 0 120 90" aria-hidden="true" focusable="false">
+          <g class="support__rays">
+            <path d="M60 6v6M42 14l4 4M78 14l-4 4M34 30h6M86 30h-6"/>
+          </g>
+          <circle class="support__sun-glow" cx="60" cy="38" r="20"/>
+          <circle class="support__sun" cx="60" cy="38" r="12"/>
+          <!-- Each hand: a palm cupped towards the middle, fingers curling up at the outside -->
+          <path class="support__hand" d="M60 76c-12 2-28 0-38-8-6-5-9-12-6-17 2-3 6-3 8 0l3 5c1-5 5-6 8-3 2 2 2 5 3 8 5 5 13 7 22 6z"/>
+          <path class="support__hand" d="M60 76c12 2 28 0 38-8 6-5 9-12 6-17-2-3-6-3-8 0l-3 5c-1-5-5-6-8-3-2 2-2 5-3 8-5 5-13 7-22 6z"/>
+          <path class="support__cuff" d="M22 70c-4 6-6 12-6 18M98 70c4 6 6 12 6 18"/>
         </svg>
         <h2 class="support__title" id="support-title">Having a really hard day?</h2>
         <p class="support__text">You don't have to carry it alone.</p>
